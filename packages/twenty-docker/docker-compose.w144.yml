@@ -1,24 +1,33 @@
 # W144 production deploy compose for Twenty fork
 # Used by Coolify on bti-smarttable VPS for crm.w144.com
 #
+# Image is pre-built in a Codespace and pushed to GHCR. Coolify pulls
+# the published image — it does NOT build from source.
+# To rebuild and republish:
+#   1. cd /workspaces/crm-w144 (in Codespace)
+#   2. docker login ghcr.io -u zolotoymih (use PAT with write:packages)
+#   3. docker build --target twenty \
+#        --build-arg REACT_APP_SERVER_BASE_URL=https://crm.w144.com \
+#        -t ghcr.io/zolotoymih/crm-w144:latest \
+#        -t ghcr.io/zolotoymih/crm-w144:$(git rev-parse --short HEAD) \
+#        -f packages/twenty-docker/twenty/Dockerfile .
+#   4. docker push ghcr.io/zolotoymih/crm-w144:latest
+#   5. Coolify Redeploy (or push to feature branch — Auto Deploy enabled)
+#
 # External dependencies (NOT in this compose):
 # - Postgres: separate Supabase project (set via PG_DATABASE_URL env)
 # - Redis: Coolify-managed instance (set via REDIS_URL env)
 # - TLS: Coolify Traefik handles cert provisioning + routing for crm.w144.com
 #
 # All sensitive values come from Coolify env vars at runtime.
-# Build args (REACT_APP_SERVER_BASE_URL) are baked into frontend at build time.
+# REACT_APP_SERVER_BASE_URL is baked into the frontend bundle at image
+# build time (in step 3 above), not at compose-run time.
 
 name: w144-twenty
 
 services:
   server:
-    build:
-      context: .
-      dockerfile: packages/twenty-docker/twenty/Dockerfile
-      target: twenty
-      args:
-        REACT_APP_SERVER_BASE_URL: ${SERVER_URL:?SERVER_URL is required for build}
+    image: ghcr.io/zolotoymih/crm-w144:latest
     environment:
       NODE_ENV: production
       SERVER_URL: ${SERVER_URL:?SERVER_URL is required}
@@ -47,12 +56,7 @@ services:
     restart: unless-stopped
 
   worker:
-    build:
-      context: .
-      dockerfile: packages/twenty-docker/twenty/Dockerfile
-      target: twenty
-      args:
-        REACT_APP_SERVER_BASE_URL: ${SERVER_URL:?SERVER_URL is required for build}
+    image: ghcr.io/zolotoymih/crm-w144:latest
     command: ["yarn", "worker:prod"]
     environment:
       NODE_ENV: production
