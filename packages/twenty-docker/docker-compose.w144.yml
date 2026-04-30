@@ -14,7 +14,7 @@ name: w144-twenty
 services:
   server:
     build:
-      context: ../..
+      context: .
       dockerfile: packages/twenty-docker/twenty/Dockerfile
       target: twenty
       args:
@@ -48,7 +48,7 @@ services:
 
   worker:
     build:
-      context: ../..
+      context: .
       dockerfile: packages/twenty-docker/twenty/Dockerfile
       target: twenty
       args:
