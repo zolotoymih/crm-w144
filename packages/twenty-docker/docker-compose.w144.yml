@@ -1,0 +1,79 @@
+# W144 production deploy compose for Twenty fork
+# Used by Coolify on bti-smarttable VPS for crm.w144.com
+#
+# External dependencies (NOT in this compose):
+# - Postgres: separate Supabase project (set via PG_DATABASE_URL env)
+# - Redis: Coolify-managed instance (set via REDIS_URL env)
+# - TLS: Coolify Traefik handles cert provisioning + routing for crm.w144.com
+#
+# All sensitive values come from Coolify env vars at runtime.
+# Build args (REACT_APP_SERVER_BASE_URL) are baked into frontend at build time.
+
+name: w144-twenty
+
+services:
+  server:
+    build:
+      context: ../..
+      dockerfile: packages/twenty-docker/twenty/Dockerfile
+      target: twenty
+      args:
+        REACT_APP_SERVER_BASE_URL: ${SERVER_URL:?SERVER_URL is required for build}
+    environment:
+      NODE_ENV: production
+      SERVER_URL: ${SERVER_URL:?SERVER_URL is required}
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL is required}
+      APP_SECRET: ${APP_SECRET:?APP_SECRET is required, generate with openssl rand -base64 32}
+      PG_DATABASE_URL: ${PG_DATABASE_URL:?PG_DATABASE_URL is required (external Supabase Postgres)}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required (external Coolify Redis)}
+      SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL is required for SSO}
+      SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER:?SUPABASE_JWT_ISSUER is required for SSO}
+      SUPABASE_JWKS_URI: ${SUPABASE_JWKS_URI:?SUPABASE_JWKS_URI is required for SSO}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:?SUPABASE_SERVICE_KEY is required for SSO}
+      IS_MULTIWORKSPACE_ENABLED: ${IS_MULTIWORKSPACE_ENABLED:-true}
+      IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS: ${IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS:-true}
+      SIGN_IN_PREFILLED: "false"
+      STORAGE_TYPE: local
+    volumes:
+      - server-local-data:/app/packages/twenty-server/.local-storage
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: packages/twenty-docker/twenty/Dockerfile
+      target: twenty
+      args:
+        REACT_APP_SERVER_BASE_URL: ${SERVER_URL:?SERVER_URL is required for build}
+    command: ["yarn", "worker:prod"]
+    environment:
+      NODE_ENV: production
+      SERVER_URL: ${SERVER_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      APP_SECRET: ${APP_SECRET}
+      PG_DATABASE_URL: ${PG_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER}
+      SUPABASE_JWKS_URI: ${SUPABASE_JWKS_URI}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      DISABLE_DB_MIGRATIONS: "true"
+      DISABLE_CRON_JOBS_REGISTRATION: "true"
+      STORAGE_TYPE: local
+    volumes:
+      - server-local-data:/app/packages/twenty-server/.local-storage
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  server-local-data:
