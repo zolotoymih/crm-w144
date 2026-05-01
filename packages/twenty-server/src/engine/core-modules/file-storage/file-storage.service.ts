@@ -94,7 +94,7 @@ export class FileStorageService {
         path: `${fileFolder}/${resourcePath}`,
         workspaceId,
         applicationId: application.id,
-        id: fileId,
+        ...(fileId !== undefined ? { id: fileId } : {}),
         mimeType,
         size:
           typeof sourceFile === 'string'
