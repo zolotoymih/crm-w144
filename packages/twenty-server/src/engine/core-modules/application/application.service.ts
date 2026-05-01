@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FileFolder } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { type QueryRunner, type Repository } from 'typeorm';
+import { v4 } from 'uuid';
 
 import { ApplicationEntity } from 'src/engine/core-modules/application/application.entity';
 import {
@@ -407,6 +408,7 @@ export class ApplicationService {
       applicationUniversalIdentifier: application.universalIdentifier,
       workspaceId: application.workspaceId,
       resourcePath: 'package.json',
+      fileId: v4(),
       settings: { isTemporaryFile: false, toDelete: false },
       queryRunner,
     });
@@ -418,6 +420,7 @@ export class ApplicationService {
       applicationUniversalIdentifier: application.universalIdentifier,
       workspaceId: application.workspaceId,
       resourcePath: 'yarn.lock',
+      fileId: v4(),
       settings: { isTemporaryFile: false, toDelete: false },
       queryRunner,
     });
