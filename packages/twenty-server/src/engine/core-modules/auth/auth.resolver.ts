@@ -2,6 +2,7 @@ import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { Args, Context, Mutation, Query } from '@nestjs/graphql';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { type Request } from 'express';
 import omit from 'lodash.omit';
 import { PermissionFlagType } from 'twenty-shared/constants';
 import { SOURCE_LOCALE } from 'twenty-shared/translations';
@@ -38,6 +39,7 @@ import { VerifyEmailAndGetLoginTokenDTO } from 'src/engine/core-modules/auth/dto
 import { AuthGraphqlApiExceptionFilter } from 'src/engine/core-modules/auth/filters/auth-graphql-api-exception.filter';
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
+import { SupabaseJwtAuthStrategy } from 'src/engine/core-modules/auth/strategies/supabase-jwt.auth.strategy';
 import { EmailVerificationTokenService } from 'src/engine/core-modules/auth/token/services/email-verification-token.service';
 import { LoginTokenService } from 'src/engine/core-modules/auth/token/services/login-token.service';
 import { RefreshTokenService } from 'src/engine/core-modules/auth/token/services/refresh-token.service';
@@ -125,6 +127,7 @@ export class AuthResolver {
     private ssoService: SSOService,
     private readonly auditService: AuditService,
     private readonly permissionsService: PermissionsService,
+    private readonly supabaseJwtAuthStrategy: SupabaseJwtAuthStrategy,
   ) {}
 
   @UseGuards(CaptchaGuard, PublicEndpointGuard, NoPermissionGuard)
@@ -608,6 +611,36 @@ export class AuthResolver {
         tokenPayload.authProvider,
       );
     }
+  }
+
+  @Mutation(() => AuthTokens)
+  @UseGuards(PublicEndpointGuard, NoPermissionGuard)
+  async exchangeSupabaseSessionForAuthTokens(
+    @Args('origin') origin: string,
+    @Context() ctx: { req: Request },
+  ): Promise<AuthTokens> {
+    const rawJwt = SupabaseJwtAuthStrategy.extractAccessTokenFromCookie(
+      ctx.req,
+      this.supabaseJwtAuthStrategy.cookieName,
+    );
+
+    if (!rawJwt) {
+      throw new AuthException(
+        'No Supabase session cookie',
+        AuthExceptionCode.UNAUTHENTICATED,
+      );
+    }
+
+    const authContext =
+      await this.supabaseJwtAuthStrategy.verifyAndExtractContext(rawJwt);
+
+    await this.validateWorkspaceAccess(origin, authContext.workspace.id);
+
+    return await this.authService.verify(
+      authContext.user.email,
+      authContext.workspace.id,
+      AuthProviderEnum.SSO,
+    );
   }
 
   private async validateAndDecodeLoginToken(
