@@ -45,14 +45,46 @@ services:
       STORAGE_TYPE: local
     volumes:
       - server-local-data:/app/packages/twenty-server/.local-storage
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
       interval: 10s
       timeout: 5s
       retries: 30
       start_period: 60s
+    labels:
+      - traefik.enable=true
+
+      # Main router — apex CRM domain (crm.w144.com)
+      - traefik.http.routers.twenty-main.rule=Host(`crm.w144.com`)
+      - traefik.http.routers.twenty-main.entrypoints=https
+      - traefik.http.routers.twenty-main.tls=true
+      - traefik.http.routers.twenty-main.tls.certresolver=letsencrypt
+      - traefik.http.routers.twenty-main.tls.domains[0].main=crm.w144.com
+      - traefik.http.routers.twenty-main.tls.domains[0].sans=*.crm.w144.com
+      - traefik.http.routers.twenty-main.service=twenty-server
+
+      # Wildcard router — any subdomain of crm.w144.com (Twenty multi-workspace)
+      - traefik.http.routers.twenty-wildcard.rule=HostRegexp(`^[a-z0-9-]+\.crm\.w144\.com$`)
+      - traefik.http.routers.twenty-wildcard.entrypoints=https
+      - traefik.http.routers.twenty-wildcard.tls=true
+      - traefik.http.routers.twenty-wildcard.tls.certresolver=letsencrypt
+      - traefik.http.routers.twenty-wildcard.tls.domains[0].main=crm.w144.com
+      - traefik.http.routers.twenty-wildcard.tls.domains[0].sans=*.crm.w144.com
+      - traefik.http.routers.twenty-wildcard.service=twenty-server
+
+      # HTTP → HTTPS redirect for both routers
+      - traefik.http.routers.twenty-main-http.rule=Host(`crm.w144.com`)
+      - traefik.http.routers.twenty-main-http.entrypoints=http
+      - traefik.http.routers.twenty-main-http.middlewares=redirect-to-https
+      - traefik.http.routers.twenty-wildcard-http.rule=HostRegexp(`^[a-z0-9-]+\.crm\.w144\.com$`)
+      - traefik.http.routers.twenty-wildcard-http.entrypoints=http
+      - traefik.http.routers.twenty-wildcard-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+
+      # Backend service definition — points to container's port 3000
+      - traefik.http.services.twenty-server.loadbalancer.server.port=3000
     restart: unless-stopped
 
   worker:
