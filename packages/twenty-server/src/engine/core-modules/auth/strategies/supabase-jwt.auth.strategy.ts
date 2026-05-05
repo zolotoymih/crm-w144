@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 
 import { type AuthContext } from 'src/engine/core-modules/auth/types/auth-context.type';
 import { type PartialUserWithPicture } from 'src/engine/core-modules/auth/types/signInUp.type';
+import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import {
   SUPABASE_AUTH_CLIENT,
@@ -58,6 +59,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
     private readonly signInUpService: SignInUpService,
     private readonly workspaceCacheService: WorkspaceCacheService,
     private readonly coreEntityCacheService: CoreEntityCacheService,
+    private readonly jitService: JitWorkspaceProvisioningService,
     @Inject(SUPABASE_AUTH_CLIENT)
     supabaseAuthClient: SupabaseAuthClient,
   ) {
@@ -294,12 +296,6 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
         );
       }
 
-      // Hosted mode requires JIT-provisioning if workspace doesn't exist yet.
-      // Phase 6.3b PR2 will replace this throw with actual provisioning logic.
-      if (connection.platform === 'twenty-hosted' && !connection.workspace_id) {
-        throw new UnauthorizedException('WORKSPACE_PROVISIONING_REQUIRED');
-      }
-
       // External Connector mode: connection must be tested before use.
       if (
         connection.platform === 'twenty' &&
@@ -310,23 +306,19 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
         );
       }
 
-      // Other platforms or fallthrough: workspace_id must be set.
-      if (!connection.workspace_id) {
+      // Non-hosted platforms require workspace_id to be set.
+      // For 'twenty-hosted' with NULL workspace_id, JIT provisioning happens below.
+      if (
+        connection.platform !== 'twenty-hosted' &&
+        !connection.workspace_id
+      ) {
         throw new UnauthorizedException('CRM Hub workspace not configured');
       }
       this.logger.debug(
-        `validate: hub_connection lookup OK, workspace_id=${connection.workspace_id}`,
+        `validate: hub_connection lookup OK, platform=${connection.platform}, workspace_id=${connection.workspace_id ?? 'null (JIT-pending)'}`,
       );
 
-      const workspace = await this.workspaceRepository.findOne({
-        where: { id: connection.workspace_id },
-      });
-
-      if (!isDefined(workspace)) {
-        throw new UnauthorizedException('Twenty workspace not found');
-      }
-      this.logger.debug(`validate: workspace lookup OK, id=${workspace.id}`);
-
+      // Build userData early — needed by both JIT and standard sign-in paths.
       const existingUser = await this.userRepository.findOne({
         where: { email: payload.email },
       });
@@ -338,15 +330,56 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
             newUserWithPicture: this.buildPartialUser(payload),
           });
 
-      this.logger.debug(
-        `validate: calling signInUpOnExistingWorkspace (userData.type=${userData.type})`,
-      );
-      const user = await this.signInUpService.signInUpOnExistingWorkspace({
-        workspace,
-        userData,
-      });
+      // Branch on hosting mode: JIT-provision for hosted+null, otherwise standard sign-in.
+      let workspace: WorkspaceEntity;
+      let user: UserEntity;
 
-      this.logger.debug(`validate: signInUpOnExistingWorkspace OK, userId=${user.id}`);
+      if (
+        connection.platform === 'twenty-hosted' &&
+        !connection.workspace_id
+      ) {
+        this.logger.debug(
+          `validate: triggering JIT provisioning for company=${profile.company_id}`,
+        );
+
+        const result = await this.jitService.provision({
+          companyId: profile.company_id,
+          userData,
+        });
+
+        user = result.user;
+        workspace = result.workspace;
+
+        this.logger.debug(
+          `validate: JIT provision OK, workspace=${workspace.id}, user=${user.id}`,
+        );
+      } else {
+        const existingWorkspace = await this.workspaceRepository.findOne({
+          where: { id: connection.workspace_id! },
+        });
+
+        if (!isDefined(existingWorkspace)) {
+          throw new UnauthorizedException('Twenty workspace not found');
+        }
+
+        workspace = existingWorkspace;
+        this.logger.debug(
+          `validate: workspace lookup OK, id=${workspace.id}`,
+        );
+
+        this.logger.debug(
+          `validate: calling signInUpOnExistingWorkspace (userData.type=${userData.type})`,
+        );
+
+        user = await this.signInUpService.signInUpOnExistingWorkspace({
+          workspace,
+          userData,
+        });
+
+        this.logger.debug(
+          `validate: signInUpOnExistingWorkspace OK, userId=${user.id}`,
+        );
+      }
 
       const flatUser = await this.coreEntityCacheService.get('user', user.id);
 
