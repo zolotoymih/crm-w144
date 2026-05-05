@@ -1,8 +1,8 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { type SupabaseClient } from '@supabase/supabase-js';
 import { type Request as ExpressRequest } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { JwksClient, passportJwtSecret } from 'jwks-rsa';
@@ -13,6 +13,10 @@ import { Repository } from 'typeorm';
 import { type AuthContext } from 'src/engine/core-modules/auth/types/auth-context.type';
 import { type PartialUserWithPicture } from 'src/engine/core-modules/auth/types/signInUp.type';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
+import {
+  SUPABASE_AUTH_CLIENT,
+  type SupabaseAuthClient,
+} from 'src/engine/core-modules/auth/services/supabase-auth-client.provider';
 import { CoreEntityCacheService } from 'src/engine/core-entity-cache/services/core-entity-cache.service';
 import { UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { UserWorkspaceEntity } from 'src/engine/core-modules/user-workspace/user-workspace.entity';
@@ -54,19 +58,21 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
     private readonly signInUpService: SignInUpService,
     private readonly workspaceCacheService: WorkspaceCacheService,
     private readonly coreEntityCacheService: CoreEntityCacheService,
+    @Inject(SUPABASE_AUTH_CLIENT)
+    supabaseAuthClient: SupabaseAuthClient,
   ) {
     const jwksUri = process.env.SUPABASE_JWKS_URI?.trim();
     const issuer = process.env.SUPABASE_JWT_ISSUER?.trim();
-    const supabaseUrl = process.env.SUPABASE_URL?.trim();
-    const serviceKey = process.env.SUPABASE_SERVICE_KEY?.trim();
 
-    if (!jwksUri || !issuer || !supabaseUrl || !serviceKey) {
+    if (!jwksUri || !issuer) {
       throw new Error(
-        'Supabase env vars missing: SUPABASE_JWKS_URI, SUPABASE_JWT_ISSUER, SUPABASE_URL, SUPABASE_SERVICE_KEY are all required',
+        'Supabase env vars missing: SUPABASE_JWKS_URI and SUPABASE_JWT_ISSUER are required',
       );
     }
 
-    const projectRef = SupabaseJwtAuthStrategy.deriveProjectRef(supabaseUrl);
+    const projectRef = SupabaseJwtAuthStrategy.deriveProjectRef(
+      supabaseAuthClient.url,
+    );
     const cookieName = `sb-${projectRef}-auth-token`;
 
     const options: StrategyOptions = {
@@ -93,9 +99,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
       cache: true,
       rateLimit: true,
     });
-    this.supabase = createClient(supabaseUrl, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    this.supabase = supabaseAuthClient.client;
   }
 
   async verifyAndExtractContext(rawJwt: string): Promise<AuthContext> {
