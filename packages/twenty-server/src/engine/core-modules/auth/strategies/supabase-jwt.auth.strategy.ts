@@ -273,10 +273,9 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       const { data: connection, error: connectionError } = await this.supabase
         .from('hub_connections')
-        .select('workspace_id, status')
+        .select('workspace_id, status, platform')
         .eq('company_id', profile.company_id)
         .eq('hub_type', 'crm')
-        .eq('status', 'connected')
         .maybeSingle();
 
       if (connectionError) {
@@ -285,8 +284,31 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
         );
       }
 
-      if (!connection?.workspace_id) {
-        throw new UnauthorizedException('CRM Hub not activated');
+      if (!connection) {
+        throw new UnauthorizedException(
+          'CRM Hub not activated for this company',
+        );
+      }
+
+      // Hosted mode requires JIT-provisioning if workspace doesn't exist yet.
+      // Phase 6.3b PR2 will replace this throw with actual provisioning logic.
+      if (connection.platform === 'twenty-hosted' && !connection.workspace_id) {
+        throw new UnauthorizedException('WORKSPACE_PROVISIONING_REQUIRED');
+      }
+
+      // External Connector mode: connection must be tested before use.
+      if (
+        connection.platform === 'twenty' &&
+        connection.status !== 'connected'
+      ) {
+        throw new UnauthorizedException(
+          `External Twenty connection is in '${connection.status}' state — test the connection first`,
+        );
+      }
+
+      // Other platforms or fallthrough: workspace_id must be set.
+      if (!connection.workspace_id) {
+        throw new UnauthorizedException('CRM Hub workspace not configured');
       }
       this.logger.debug(
         `validate: hub_connection lookup OK, workspace_id=${connection.workspace_id}`,
