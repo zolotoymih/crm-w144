@@ -23,6 +23,7 @@ import { CreateSSOConnectedAccountService } from 'src/engine/core-modules/auth/s
 import { GoogleAPIScopesService } from 'src/engine/core-modules/auth/services/google-apis-scopes';
 import { GoogleApisServiceAvailabilityService } from 'src/engine/core-modules/auth/services/google-apis-service-availability.service';
 import { GoogleAPIsService } from 'src/engine/core-modules/auth/services/google-apis.service';
+import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { MicrosoftAPIsService } from 'src/engine/core-modules/auth/services/microsoft-apis.service';
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
@@ -132,6 +133,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
   ],
   providers: [
     SignInUpService,
+    JitWorkspaceProvisioningService,
     AuthService,
     JwtAuthStrategy,
     SamlAuthStrategy,
