@@ -59,6 +59,7 @@ import { UserWorkspaceModule } from 'src/engine/core-modules/user-workspace/user
 import { UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { UserModule } from 'src/engine/core-modules/user/user.module';
 import { WorkspaceInvitationModule } from 'src/engine/core-modules/workspace-invitation/workspace-invitation.module';
+import { WorkspaceModule } from 'src/engine/core-modules/workspace/workspace.module';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { CoreEntityCacheModule } from 'src/engine/core-entity-cache/core-entity-cache.module';
 import { CalendarChannelEntity } from 'src/engine/metadata-modules/calendar-channel/entities/calendar-channel.entity';
@@ -123,6 +124,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     SecureHttpClientModule,
     EnterpriseModule,
     FileModule,
+    WorkspaceModule,
   ],
   controllers: [
     GoogleAuthController,
