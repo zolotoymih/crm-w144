@@ -773,10 +773,11 @@ export class WorkspaceService extends TypeOrmQueryService<WorkspaceEntity> {
     try {
       await queryRunner.startTransaction();
 
-      await prefillCompanies(queryRunner.manager, schemaName);
+      const demoSeedEnabled = this.twentyConfigService.get(
+        'ENABLE_WORKSPACE_DEMO_SEED',
+      );
 
-      await prefillPeople(queryRunner.manager, schemaName);
-
+      // Functional setup — always runs.
       await prefillWorkflows(
         queryRunner.manager,
         workspaceId,
@@ -785,13 +786,19 @@ export class WorkspaceService extends TypeOrmQueryService<WorkspaceEntity> {
         flatFieldMetadataMaps,
       );
 
-      await prefillOpportunities(queryRunner.manager, schemaName);
-
       await prefillDashboards(
         queryRunner.manager,
         schemaName,
         flatPageLayoutMaps,
       );
+
+      // Demo data — gated by env flag. Companies → People → Opportunities have
+      // FK dependencies between them, so they must be seeded as an atomic group.
+      if (demoSeedEnabled) {
+        await prefillCompanies(queryRunner.manager, schemaName);
+        await prefillPeople(queryRunner.manager, schemaName);
+        await prefillOpportunities(queryRunner.manager, schemaName);
+      }
 
       await queryRunner.commitTransaction();
     } catch (error) {

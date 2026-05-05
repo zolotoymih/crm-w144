@@ -1411,6 +1411,15 @@ export class ConfigVariables {
   IS_MULTIWORKSPACE_ENABLED = false;
 
   @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    description:
+      'Enable demo data seeding (companies, people, opportunities) for newly created workspaces. Disabled by default in production multi-tenant deployments.',
+    type: ConfigVariableType.BOOLEAN,
+  })
+  @IsOptional()
+  ENABLE_WORKSPACE_DEMO_SEED = false;
+
+  @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.ADVANCED_SETTINGS,
     description:
       'Number of inactive days before sending a deletion warning for workspaces. Used in the workspace deletion cron job to determine when to send warning emails.',
