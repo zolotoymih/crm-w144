@@ -16,6 +16,10 @@ export const EXCHANGE_SUPABASE_SESSION_FOR_AUTH_TOKENS = gql`
           expiresAt
         }
       }
+      workspaceUrls {
+        customUrl
+        subdomainUrl
+      }
     }
   }
 `;
