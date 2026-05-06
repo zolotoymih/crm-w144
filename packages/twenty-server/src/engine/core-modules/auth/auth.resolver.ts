@@ -86,6 +86,7 @@ import { AuthTokens } from './dto/auth-tokens.dto';
 import { GetAuthTokensFromLoginTokenInput } from './dto/get-auth-tokens-from-login-token.input';
 import { LoginTokenDTO } from './dto/login-token.dto';
 import { SignUpInput } from './dto/sign-up.input';
+import { SupabaseSessionExchangeOutput } from './dto/supabase-session-exchange-output';
 import { UserCredentialsInput } from './dto/user-credentials.input';
 import { CheckUserExistDTO } from './dto/user-exists.dto';
 import { EmailAndCaptchaInput } from './dto/user-exists.input';
@@ -613,12 +614,12 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => AuthTokens)
+  @Mutation(() => SupabaseSessionExchangeOutput)
   @UseGuards(PublicEndpointGuard, NoPermissionGuard)
   async exchangeSupabaseSessionForAuthTokens(
     @Args('origin') origin: string,
     @Context() ctx: { req: Request },
-  ): Promise<AuthTokens> {
+  ): Promise<SupabaseSessionExchangeOutput> {
     const rawJwt = SupabaseJwtAuthStrategy.extractAccessTokenFromCookie(
       ctx.req,
       this.supabaseJwtAuthStrategy.cookieName,
@@ -634,13 +635,27 @@ export class AuthResolver {
     const authContext =
       await this.supabaseJwtAuthStrategy.verifyAndExtractContext(rawJwt);
 
-    await this.validateWorkspaceAccess(origin, authContext.workspace.id);
+    const workspace = await this.validateWorkspaceAccess(
+      origin,
+      authContext.workspace.id,
+    );
 
-    return await this.authService.verify(
+    const authTokens = await this.authService.verify(
       authContext.user.email,
       authContext.workspace.id,
       AuthProviderEnum.SSO,
     );
+
+    const workspaceUrls = this.workspaceDomainsService.getWorkspaceUrls({
+      subdomain: workspace.subdomain,
+      customDomain: workspace.customDomain,
+      isCustomDomainEnabled: workspace.isCustomDomainEnabled,
+    });
+
+    return {
+      tokens: authTokens.tokens,
+      workspaceUrls,
+    };
   }
 
   private async validateAndDecodeLoginToken(
