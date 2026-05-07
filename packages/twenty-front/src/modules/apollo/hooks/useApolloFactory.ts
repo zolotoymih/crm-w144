@@ -43,8 +43,16 @@ export const useApolloFactory = (options: Partial<Options> = {}) => {
   const { enqueueErrorSnackBar } = useSnackBar();
 
   const apolloClient = useMemo(() => {
+    // Multi-tenant: workspaces live on per-subdomain origins; the backend
+    // resolves the workspace from the request origin. Prefer the runtime
+    // origin so requests stay on the current subdomain.
+    const graphqlUri =
+      typeof window !== 'undefined' && window.location.origin
+        ? `${window.location.origin}/graphql`
+        : `${REACT_APP_SERVER_BASE_URL}/graphql`;
+
     apolloRef.current = new ApolloFactory({
-      uri: `${REACT_APP_SERVER_BASE_URL}/graphql`,
+      uri: graphqlUri,
       cache: new InMemoryCache({
         typePolicies: {
           RemoteTable: {

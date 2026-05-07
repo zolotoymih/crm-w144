@@ -2,7 +2,14 @@ import { type ClientConfig } from '@/client-config/types/ClientConfig';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 
 export const getClientConfig = async (): Promise<ClientConfig> => {
-  const response = await fetch(`${REACT_APP_SERVER_BASE_URL}/client-config`, {
+  // Multi-tenant: client config is workspace-aware; resolve via runtime
+  // origin so the response matches the current subdomain.
+  const clientConfigUrl =
+    typeof window !== 'undefined' && window.location.origin
+      ? `${window.location.origin}/client-config`
+      : `${REACT_APP_SERVER_BASE_URL}/client-config`;
+
+  const response = await fetch(clientConfigUrl, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

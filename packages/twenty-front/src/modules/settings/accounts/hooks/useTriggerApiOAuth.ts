@@ -46,7 +46,12 @@ export const useTriggerApisOAuth = () => {
         skipMessageChannelConfiguration?: boolean;
       } = {},
     ) => {
-      const authServerUrl = REACT_APP_SERVER_BASE_URL;
+      // Multi-tenant: OAuth must start from the workspace's subdomain so
+      // the callback returns to the correct workspace context.
+      const authServerUrl =
+        typeof window !== 'undefined' && window.location.origin
+          ? window.location.origin
+          : REACT_APP_SERVER_BASE_URL;
 
       const transientToken = await generateTransientToken();
 

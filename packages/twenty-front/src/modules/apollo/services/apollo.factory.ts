@@ -18,7 +18,7 @@ import { type AuthTokenPair } from '~/generated-metadata/graphql';
 import { logDebug } from '~/utils/logDebug';
 import { retryWithBackoff } from '~/utils/retryWithBackoff';
 
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { getRestApiBaseUrl } from '@/apollo/constant/rest-api-base-url';
 import { type ApolloManager } from '@/apollo/types/apolloManager.interface';
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
 import { loggerLink } from '@/apollo/utils/loggerLink';
@@ -100,12 +100,14 @@ export class ApolloFactory implements ApolloManager {
         uri,
       });
 
+      const restApiBaseUrl = getRestApiBaseUrl();
+
       const streamingRestLink = new StreamingRestLink({
-        uri: REST_API_BASE_URL,
+        uri: restApiBaseUrl,
       });
 
       const restLink = new RestLink({
-        uri: REST_API_BASE_URL,
+        uri: restApiBaseUrl,
       });
 
       const authLink = setContext(async (_, { headers }) => {
@@ -160,7 +162,13 @@ export class ApolloFactory implements ApolloManager {
       });
 
       const attemptTokenRenewal = async (): Promise<void> => {
-        const graphqlUri = `${REACT_APP_SERVER_BASE_URL}/metadata`;
+        // Multi-tenant: token renewal must hit the same workspace as the
+        // Apollo client; resolve via runtime origin so we stay on the
+        // current subdomain.
+        const graphqlUri =
+          typeof window !== 'undefined' && window.location.origin
+            ? `${window.location.origin}/metadata`
+            : `${REACT_APP_SERVER_BASE_URL}/metadata`;
 
         const tokens = await retryWithBackoff(
           () => renewToken(graphqlUri, getTokenPair()),

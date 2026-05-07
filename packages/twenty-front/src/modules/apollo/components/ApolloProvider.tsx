@@ -10,8 +10,16 @@ export const ApolloProvider = ({ children }: React.PropsWithChildren) => {
 
   const captchaRefreshLink = createCaptchaRefreshLink(requestFreshCaptchaToken);
 
+  // Multi-tenant: each workspace lives on its own subdomain and the backend
+  // resolves the workspace from the request origin. Prefer the runtime origin
+  // over the build-time base URL so requests stay on the current subdomain.
+  const metadataUri =
+    typeof window !== 'undefined' && window.location.origin
+      ? `${window.location.origin}/metadata`
+      : `${REACT_APP_SERVER_BASE_URL}/metadata`;
+
   const apolloClient = useApolloFactory({
-    uri: `${REACT_APP_SERVER_BASE_URL}/metadata`,
+    uri: metadataUri,
     devtools: { enabled: process.env.IS_DEBUG_MODE === 'true' },
     extraLinks: [captchaRefreshLink],
   });

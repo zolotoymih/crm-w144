@@ -33,8 +33,15 @@ export const SSEClientEffect = () => {
 
   useEffect(() => {
     if (hasAccessTokenPair && !isDefined(sseClient) && isDefined(tokenPair)) {
+      // Multi-tenant: SSE must connect to the same workspace as Apollo;
+      // resolve via runtime origin so we stay on the current subdomain.
+      const sseUrl =
+        typeof window !== 'undefined' && window.location.origin
+          ? `${window.location.origin}/metadata`
+          : `${REACT_APP_SERVER_BASE_URL}/metadata`;
+
       const newSseClient = createClient({
-        url: `${REACT_APP_SERVER_BASE_URL}/metadata`,
+        url: sseUrl,
         headers: () => {
           const currentTokenPair = store.get(tokenPairState.atom);
           const token = currentTokenPair?.accessOrWorkspaceAgnosticToken?.token;

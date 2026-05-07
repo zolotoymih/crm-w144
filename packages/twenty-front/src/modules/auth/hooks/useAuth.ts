@@ -569,7 +569,13 @@ export const useAuth = () => {
         action?: string;
       },
     ) => {
-      const url = new URL(`${REACT_APP_SERVER_BASE_URL}${path}`);
+      // Multi-tenant: redirect must stay on the workspace's subdomain so
+      // the backend resolves the correct workspace context.
+      const baseUrl =
+        typeof window !== 'undefined' && window.location.origin
+          ? window.location.origin
+          : REACT_APP_SERVER_BASE_URL;
+      const url = new URL(`${baseUrl}${path}`);
       if (isDefined(params.workspaceInviteHash)) {
         url.searchParams.set('workspaceInviteHash', params.workspaceInviteHash);
       }

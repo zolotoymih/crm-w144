@@ -1,4 +1,4 @@
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { getRestApiBaseUrl } from '@/apollo/constant/rest-api-base-url';
 import { isDefined } from 'twenty-shared/utils';
 
 export const getFrontComponentUrl = ({
@@ -8,7 +8,8 @@ export const getFrontComponentUrl = ({
   frontComponentId: string;
   checksum?: string;
 }): string => {
+  const baseUrl = getRestApiBaseUrl();
   return isDefined(checksum)
-    ? `${REST_API_BASE_URL}/front-components/${frontComponentId}?checksum=${checksum}`
-    : `${REST_API_BASE_URL}/front-components/${frontComponentId}`;
+    ? `${baseUrl}/front-components/${frontComponentId}?checksum=${checksum}`
+    : `${baseUrl}/front-components/${frontComponentId}`;
 };
