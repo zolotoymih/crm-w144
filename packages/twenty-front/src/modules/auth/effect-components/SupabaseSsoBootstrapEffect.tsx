@@ -5,17 +5,19 @@ import { useAuth } from '@/auth/hooks/useAuth';
 import { useHasAccessTokenPair } from '@/auth/hooks/useHasAccessTokenPair';
 import { EXCHANGE_SUPABASE_SESSION_FOR_AUTH_TOKENS } from '@/auth/graphql/mutations/exchangeSupabaseSessionForAuthTokens';
 import { clientConfigApiStatusState } from '@/client-config/states/clientConfigApiStatusState';
-import { isMultiWorkspaceEnabledState } from '@/client-config/states/isMultiWorkspaceEnabledState';
 import { useRedirectToWorkspaceDomain } from '@/domain-manager/hooks/useRedirectToWorkspaceDomain';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { useLoadCurrentUser } from '@/users/hooks/useLoadCurrentUser';
 import { isDefined } from 'twenty-shared/utils';
-import { getWorkspaceUrl } from '~/utils/getWorkspaceUrl';
 
 // Silently bridges a Supabase auth-token cookie (set on .w144.com) into a
 // Twenty native tokenPair. Runs once at app load when no tokenPair exists.
-// On 401 / any failure, does nothing — the user falls through to the regular
-// sign-in screen via usePageChangeEffectNavigateLocation.
+// The backend returns workspaceUrls unconditionally, plus tokens iff the
+// origin host matches the user's workspace. When origin doesn't match
+// (typical for users landing on a multi-tenant entry host), tokens come back
+// null and we redirect to the correct subdomain — the Supabase cookie on
+// .w144.com follows, and the effect re-runs there to issue tokens.
+// On any failure, does nothing — the user falls through to the sign-in screen.
 export const SupabaseSsoBootstrapEffect = () => {
   const hasAccessTokenPair = useHasAccessTokenPair();
   const { isSaved: clientConfigLoaded } = useAtomStateValue(
@@ -25,10 +27,6 @@ export const SupabaseSsoBootstrapEffect = () => {
   const { setAuthTokens } = useAuth();
   const { loadCurrentUser } = useLoadCurrentUser();
   const { redirectToWorkspaceDomain } = useRedirectToWorkspaceDomain();
-
-  const isMultiWorkspaceEnabled = useAtomStateValue(
-    isMultiWorkspaceEnabledState,
-  );
 
   const [exchangeSupabaseSession] = useMutation(
     EXCHANGE_SUPABASE_SESSION_FOR_AUTH_TOKENS,
@@ -56,7 +54,7 @@ export const SupabaseSsoBootstrapEffect = () => {
                   tokens?: unknown;
                   workspaceUrls?: {
                     customUrl?: string | null;
-                    subdomainUrl: string;
+                    subdomainUrl?: string;
                   };
                 };
               }
@@ -64,23 +62,42 @@ export const SupabaseSsoBootstrapEffect = () => {
             | undefined
         )?.exchangeSupabaseSessionForAuthTokens;
 
-        const tokens = exchangeData?.tokens;
-        const workspaceUrls = exchangeData?.workspaceUrls;
+        if (!isDefined(exchangeData)) return;
 
-        if (!isDefined(tokens)) return;
+        const { tokens, workspaceUrls } = exchangeData;
 
-        // If workspace lives on a different host (typical after JIT-provisioning
-        // creates a new subdomain), redirect there — the Supabase cookie on
-        // .w144.com follows, the effect re-runs on the subdomain, and
-        // setAuthTokens then completes against the right backend.
-        if (isDefined(workspaceUrls) && isMultiWorkspaceEnabled) {
-          const workspaceUrl = getWorkspaceUrl(workspaceUrls);
-          const workspaceHost = new URL(workspaceUrl).hostname;
+        const targetSubdomainUrl = workspaceUrls?.subdomainUrl;
+        const targetCustomUrl = workspaceUrls?.customUrl;
+        const currentHost = window.location.host;
 
-          if (workspaceHost !== window.location.hostname) {
-            redirectToWorkspaceDomain(workspaceUrl, window.location.pathname);
-            return;
+        const parseHostSafe = (url: string | null | undefined): string | null => {
+          if (!isDefined(url)) return null;
+          try {
+            return new URL(url).host;
+          } catch {
+            return null;
           }
+        };
+
+        const targetSubdomainHost = parseHostSafe(targetSubdomainUrl);
+        const targetCustomHost = parseHostSafe(targetCustomUrl);
+
+        const needsRedirect =
+          isDefined(targetSubdomainHost) &&
+          targetSubdomainHost !== currentHost &&
+          (targetCustomHost === null || targetCustomHost !== currentHost);
+
+        if (!isDefined(tokens)) {
+          if (needsRedirect && isDefined(targetSubdomainUrl)) {
+            redirectToWorkspaceDomain(targetSubdomainUrl);
+          }
+          return;
+        }
+
+        if (needsRedirect && isDefined(targetSubdomainUrl)) {
+          setAuthTokens(tokens as Parameters<typeof setAuthTokens>[0]);
+          redirectToWorkspaceDomain(targetSubdomainUrl);
+          return;
         }
 
         setAuthTokens(tokens as Parameters<typeof setAuthTokens>[0]);
@@ -96,7 +113,6 @@ export const SupabaseSsoBootstrapEffect = () => {
     setAuthTokens,
     loadCurrentUser,
     redirectToWorkspaceDomain,
-    isMultiWorkspaceEnabled,
   ]);
 
   return <></>;

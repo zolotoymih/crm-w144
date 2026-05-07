@@ -5,8 +5,8 @@ import { WorkspaceUrlsDTO } from 'src/engine/core-modules/workspace/dtos/workspa
 
 @ObjectType()
 export class SupabaseSessionExchangeOutput {
-  @Field(() => AuthTokenPair)
-  tokens: AuthTokenPair;
+  @Field(() => AuthTokenPair, { nullable: true })
+  tokens: AuthTokenPair | null;
 
   @Field(() => WorkspaceUrlsDTO)
   workspaceUrls: WorkspaceUrlsDTO;

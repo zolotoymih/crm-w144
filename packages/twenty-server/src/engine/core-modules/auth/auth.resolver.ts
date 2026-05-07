@@ -635,26 +635,60 @@ export class AuthResolver {
     const authContext =
       await this.supabaseJwtAuthStrategy.verifyAndExtractContext(rawJwt);
 
-    const workspace = await this.validateWorkspaceAccess(
-      origin,
-      authContext.workspace.id,
+    // The JWT (with JIT-provisioning side-effect) is the source of truth for
+    // which workspace this user belongs to. The strategy guarantees both are
+    // populated on success; assertions narrow the optional AuthContext fields.
+    const userWorkspace = authContext.workspace;
+    const authUser = authContext.user;
+
+    assertIsDefinedOrThrow(
+      userWorkspace,
+      new AuthException(
+        'Auth context missing workspace',
+        AuthExceptionCode.UNAUTHENTICATED,
+      ),
+    );
+    assertIsDefinedOrThrow(
+      authUser,
+      new AuthException(
+        'Auth context missing user',
+        AuthExceptionCode.UNAUTHENTICATED,
+      ),
     );
 
+    const userWorkspaceUrls = this.workspaceDomainsService.getWorkspaceUrls({
+      subdomain: userWorkspace.subdomain,
+      customDomain: userWorkspace.customDomain,
+      isCustomDomainEnabled: userWorkspace.isCustomDomainEnabled,
+    });
+
+    const originWorkspace =
+      await this.workspaceDomainsService.getWorkspaceByOriginOrDefaultWorkspace(
+        origin,
+      );
+
+    // Origin host doesn't belong to user's workspace — return URLs only so the
+    // frontend can redirect to the correct subdomain. Issuing tokens here
+    // would scope them to the wrong workspace.
+    if (
+      !isDefined(originWorkspace) ||
+      originWorkspace.id !== userWorkspace.id
+    ) {
+      return {
+        tokens: null,
+        workspaceUrls: userWorkspaceUrls,
+      };
+    }
+
     const authTokens = await this.authService.verify(
-      authContext.user.email,
-      authContext.workspace.id,
+      authUser.email,
+      userWorkspace.id,
       AuthProviderEnum.SSO,
     );
 
-    const workspaceUrls = this.workspaceDomainsService.getWorkspaceUrls({
-      subdomain: workspace.subdomain,
-      customDomain: workspace.customDomain,
-      isCustomDomainEnabled: workspace.isCustomDomainEnabled,
-    });
-
     return {
       tokens: authTokens.tokens,
-      workspaceUrls,
+      workspaceUrls: userWorkspaceUrls,
     };
   }
 
