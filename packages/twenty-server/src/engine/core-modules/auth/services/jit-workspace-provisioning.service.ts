@@ -130,6 +130,7 @@ export class JitWorkspaceProvisioningService {
         .from('hub_connections')
         .update({
           workspace_id: args.newWorkspaceId,
+          subdomain: args.ourWorkspace.subdomain,
           status: 'connected',
         })
         .eq('company_id', args.companyId)
