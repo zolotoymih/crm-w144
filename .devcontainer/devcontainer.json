@@ -1,0 +1,7 @@
+{
+  "name": "crm-w144",
+  "postStartCommand": "if [ -n \"$GHCR_PAT\" ]; then echo \"$GHCR_PAT\" | docker login ghcr.io -u zolotoymih --password-stdin 2>&1 | grep -v '^WARNING' || true; else echo '[devcontainer] GHCR_PAT not set, skipping ghcr login'; fi",
+  "remoteEnv": {
+    "GHCR_PAT": "${localEnv:GHCR_PAT}"
+  }
+}
