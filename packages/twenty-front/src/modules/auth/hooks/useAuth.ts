@@ -128,6 +128,25 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   const clearSession = useCallback(async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      await fetch('https://app.w144.com/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (err) {
+      // Network failure / timeout — proceed with local clear regardless.
+      // App.w144.com middleware will detect missing session on next navigation.
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[W144 SSO sign-out] request failed; proceeding with local clear:',
+        err,
+      );
+    }
+
     clearSseClient();
     store.set(isAppEffectRedirectEnabledState.atom, false);
 
@@ -169,14 +188,17 @@ export const useAuth = () => {
 
     await client.clearStore();
     setLastAuthenticateWorkspaceDomain(null);
-    navigate(AppPath.SignInUp);
+    // Replace SPA navigation with cross-domain full-page redirect.
+    // Staying inside crm.w144.com SPA would let SupabaseSsoBootstrapEffect
+    // re-authenticate from the .w144.com cookie if the signout POST failed.
+    // window.location.assign leaves the SPA entirely → no re-auth path.
+    window.location.assign('https://app.w144.com/login');
     store.set(isAppEffectRedirectEnabledState.atom, true);
   }, [
     clearSseClient,
     client,
     setLastAuthenticateWorkspaceDomain,
     applyMockedMetadata,
-    navigate,
     store,
   ]);
 
