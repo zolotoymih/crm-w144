@@ -28,6 +28,7 @@ name: w144-twenty
 services:
   server:
     image: ghcr.io/zolotoymih/crm-w144:latest
+    pull_policy: always
     environment:
       NODE_ENV: production
       SERVER_URL: ${SERVER_URL:?SERVER_URL is required}
@@ -89,6 +90,7 @@ services:
 
   worker:
     image: ghcr.io/zolotoymih/crm-w144:latest
+    pull_policy: always
     command: ["yarn", "worker:prod"]
     environment:
       NODE_ENV: production
