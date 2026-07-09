@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
+import { BtiApiKeyProvisioningService } from 'src/engine/core-modules/auth/services/bti-api-key-provisioning.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import { type AuthContextUser } from 'src/engine/core-modules/auth/types/auth-context.type';
 import { ExistingUserOrPartialUserWithPicture } from 'src/engine/core-modules/auth/types/signInUp.type';
@@ -37,6 +38,7 @@ export class JitWorkspaceProvisioningService {
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
     @Inject(SUPABASE_AUTH_CLIENT)
     private readonly supabaseAuthClient: SupabaseAuthClient,
+    private readonly btiApiKeyProvisioningService: BtiApiKeyProvisioningService,
   ) {}
 
   async provision(input: JitProvisionInput): Promise<JitProvisionResult> {
@@ -74,6 +76,17 @@ export class JitWorkspaceProvisioningService {
         newWorkspaceId: workspace.id,
         ourWorkspace: workspace,
       });
+
+      // 4. Mint the BTI engine API key into hub_connections.api_key so the
+      // engine worker starts polling this workspace's pipeline immediately.
+      // Non-fatal — the internal mint endpoint can backfill later.
+      try {
+        await this.btiApiKeyProvisioningService.mintForCompany(input.companyId);
+      } catch (mintError) {
+        this.logger.warn(
+          `BTI api key mint failed for company=${input.companyId} (non-fatal): ${mintError instanceof Error ? mintError.message : String(mintError)}`,
+        );
+      }
 
       return { user, workspace: winnerWorkspace };
     } catch (error) {

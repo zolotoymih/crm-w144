@@ -14,6 +14,7 @@ import { GoogleAuthController } from 'src/engine/core-modules/auth/controllers/g
 import { MicrosoftAPIsAuthController } from 'src/engine/core-modules/auth/controllers/microsoft-apis-auth.controller';
 import { MicrosoftAuthController } from 'src/engine/core-modules/auth/controllers/microsoft-auth.controller';
 import { OAuthPropagatorController } from 'src/engine/core-modules/auth/controllers/oauth-propagator.controller';
+import { BtiInternalController } from 'src/engine/core-modules/auth/controllers/bti-internal.controller';
 import { SSOAuthController } from 'src/engine/core-modules/auth/controllers/sso-auth.controller';
 import { AuthSsoService } from 'src/engine/core-modules/auth/services/auth-sso.service';
 import { CreateCalendarChannelService } from 'src/engine/core-modules/auth/services/create-calendar-channel.service';
@@ -23,6 +24,7 @@ import { CreateSSOConnectedAccountService } from 'src/engine/core-modules/auth/s
 import { GoogleAPIScopesService } from 'src/engine/core-modules/auth/services/google-apis-scopes';
 import { GoogleApisServiceAvailabilityService } from 'src/engine/core-modules/auth/services/google-apis-service-availability.service';
 import { GoogleAPIsService } from 'src/engine/core-modules/auth/services/google-apis.service';
+import { BtiApiKeyProvisioningService } from 'src/engine/core-modules/auth/services/bti-api-key-provisioning.service';
 import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { MicrosoftAPIsService } from 'src/engine/core-modules/auth/services/microsoft-apis.service';
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
@@ -133,10 +135,12 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     MicrosoftAPIsAuthController,
     OAuthPropagatorController,
     SSOAuthController,
+    BtiInternalController,
   ],
   providers: [
     SignInUpService,
     JitWorkspaceProvisioningService,
+    BtiApiKeyProvisioningService,
     supabaseAuthClientProvider,
     AuthService,
     JwtAuthStrategy,
