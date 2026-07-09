@@ -1,0 +1,60 @@
+# W144: build the crm-w144 production image and push to GHCR.
+# Replaces the manual Codespace build (docker login with PAT + make prod-build).
+# Public repo → ubuntu-latest = 4 vCPU / 16 GB, enough for the nx front build
+# (heap 8192). GITHUB_TOKEN pushes to ghcr.io/zolotoymih/crm-w144 via
+# permissions.packages: write. Coolify compose has pull_policy: always, so a
+# redeploy after this run picks up the fresh :latest.
+name: w144-build-image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/supabase-sso-integration]
+    paths:
+      - 'packages/**'
+      - '.github/workflows/w144-build-image.yaml'
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: w144-build-image
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space (the Twenty build needs ~20GB+)
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune -af || true
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/twenty-docker/twenty/Dockerfile
+          target: twenty
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/zolotoymih/crm-w144:latest
+            ghcr.io/zolotoymih/crm-w144:${{ github.sha }}
+          build-args: |
+            REACT_APP_SERVER_BASE_URL=https://crm.w144.com
