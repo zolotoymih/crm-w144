@@ -221,3 +221,32 @@ This handles everything: starts Postgres + Redis (auto-detects local services vs
 - `tsconfig.base.json` - Base TypeScript configuration
 - `package.json` - Root package with workspace definitions
 - `.cursor/rules/` - Detailed development guidelines and best practices
+
+## Collaboration (общий git, два разработчика)
+
+Партнёр: **azolotarynets-lab** · Владелец репозитория: **zolotoymih**.
+Деплой-ветка этого репо — **`feature/supabase-sso-integration`**. **НИКОГДА не пушить в `feature/supabase-sso-integration` напрямую.**
+
+> ⚠️ Вся экосистема W144/BTI живёт на **Coolify** (VPS `209.38.200.102`).
+> **Merge в `feature/supabase-sso-integration` = автодеплой в прод** (https://crm.w144.com). Прямой push в `feature/supabase-sso-integration`
+> — мгновенный прод-релиз без review. Всегда через свою ветку + PR.
+
+**Поток работы:**
+1. Перед началом: `git fetch && git pull` (ветку мог обновить партнёр).
+2. Создать ветку от `feature/supabase-sso-integration`: `feat/<кратко>` или `fix/<кратко>`.
+3. Работа → коммит → push ВЕТКИ: `git push -u origin <ветка>`.
+4. Открыть PR: `gh pr create --base feature/supabase-sso-integration` — что / зачем / как проверено.
+5. Merge в `feature/supabase-sso-integration` — решение владельца (zolotoymih) после review.
+   Самому не мержить без явного «ок».
+
+**Правила:**
+- Конфликты решать в своей ветке (rebase/merge от `feature/supabase-sso-integration`), не в `feature/supabase-sso-integration`.
+- Коммиты — Conventional Commits (`feat:`, `fix:`, `docs:` …).
+- **Секреты** (`.env`, ключи Supabase/Anthropic, `api_key`, токены) НЕ коммитить —
+  перед push проверять `git diff`. Вся экосистема на **одном** Supabase: утечка
+  service-key = доступ ко всем компаниям во всех хабах.
+- Деструктивные операции (`push --force`, `reset --hard`, удаление remote-веток) —
+  только после явного согласования с владельцем.
+- Перед PR прогнать сборку/типы (`nx`) — красный build в `feature/supabase-sso-integration` кладёт прод.
+
+**Про этот репо (ВАЖНО):** default-ветка репозитория = `main`, но **ПРОД собирается из `feature/supabase-sso-integration`** — работай и базируй PR от НЕЁ, не от `main`. Это форк Twenty (AGPL-3.0); кастом-код W144 — в `packages/twenty-server/src/engine/core-modules/auth/` (Supabase-SSO + BTI-провижининг). Прод-образ собирает GitHub Actions при push с изменениями в `packages/**` → GHCR → Coolify.
