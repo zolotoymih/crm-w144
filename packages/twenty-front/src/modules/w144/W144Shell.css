@@ -1,0 +1,302 @@
+/* W144 shell around Twenty: top bar 56, panel 236, rows 38 (frame «CRM,
+   Companies, in the W144 shell»). Sizes from the frame; fills, rims and type
+   from the W144 design catalogue, the same as the other hubs' shell.css. */
+@import './RivieraNights.css';
+
+.w144-topbar {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 56px;
+  padding: 0 38px 0 24px;
+}
+.w144-wordmark {
+  font-family: 'Riviera Nights', Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: rgba(240, 237, 230, 0.85);
+  text-decoration: none;
+}
+
+/* the panel inside Twenty's drawer container (which pads 12 0 16 8) */
+.w144-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin-top: -4px;
+  padding: 0 16px 4px 8px;
+  font-family: 'Riviera Nights', Inter, sans-serif;
+}
+.w144-drawer-header {
+  position: absolute !important;
+  top: 13px;
+  right: 22px;
+  z-index: 2;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+.w144-panel-top,
+.w144-panel-bottom,
+.w144-products {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+}
+.w144-gap-18 {
+  height: 18px;
+  flex: none;
+}
+.w144-gap-16 {
+  height: 16px;
+  flex: none;
+}
+.w144-gap-14 {
+  height: 14px;
+  flex: none;
+}
+.w144-gap-10 {
+  height: 10px;
+  flex: none;
+}
+.w144-fill {
+  flex: 1;
+  min-height: 12px;
+}
+.w144-divider {
+  height: 1px;
+  flex: none;
+  background: rgba(255, 255, 255, 0.07);
+}
+.w144-label {
+  font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(240, 237, 230, 0.35);
+}
+
+.w144-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 38px;
+  flex: none;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: rgba(240, 237, 230, 0.65);
+  text-align: left;
+  text-decoration: none;
+}
+.w144-row > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.w144-row svg {
+  flex: none;
+  color: rgba(240, 237, 230, 0.4);
+}
+.w144-row:hover {
+  color: rgba(240, 237, 230, 0.9);
+  background: rgba(255, 255, 255, 0.03);
+}
+.w144-row.is-framed {
+  color: rgba(240, 237, 230, 0.92);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.w144-row.is-framed:first-child svg {
+  color: rgba(240, 237, 230, 0.65);
+}
+
+/* the open CRM group: head row, then Twenty's drawer content as its body */
+.w144-group {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  padding: 4px 0 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.w144-row.is-head {
+  color: rgba(240, 237, 230, 0.65);
+}
+.w144-row.is-head:hover {
+  background: none;
+}
+.w144-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 2px 8px 4px;
+  overflow: hidden;
+}
+/* Twenty's list scrolls inside the group: it dissolves at the edges instead of
+   being cut through an item, with room at the end so nothing rests in the fade */
+.w144-group-body .scroll-wrapper-y-enabled {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 32px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 32px),
+    transparent 100%
+  );
+}
+.w144-group-body .scroll-wrapper-y-enabled > * {
+  height: auto !important;
+  min-height: 100%;
+  padding-bottom: 32px;
+}
+
+.w144-row.is-profile {
+  height: 48px;
+  padding: 0 12px;
+  width: 100%;
+}
+.w144-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(240, 237, 230, 0.65);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.w144-profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.w144-profile-name {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: rgba(240, 237, 230, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.w144-profile-company {
+  font-size: 11px;
+  line-height: 1.3;
+  color: rgba(240, 237, 230, 0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* the work area: a sheet lifted off the floor, lit along its top-left edge */
+.w144-work {
+  position: relative;
+  border-top-left-radius: 16px;
+  overflow: hidden;
+}
+.w144-work::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-top-left-radius: inherit;
+  padding: 1px 0 0 1px;
+  background: linear-gradient(
+    180deg,
+    hsla(40, 80%, 65%, 0.6),
+    hsla(40, 80%, 65%, 0.45) 22%,
+    hsla(40, 80%, 65%, 0.27) 62%,
+    hsla(40, 80%, 65%, 0.08)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* light theme: the same shell in the light tokens (text #1A1A1A, black rims,
+   the one light gold #F2AD0A along the work area's edge) */
+html.light .w144-wordmark {
+  color: rgba(26, 26, 26, 0.85);
+}
+html.light .w144-divider {
+  background: rgba(0, 0, 0, 0.1);
+}
+html.light .w144-label {
+  color: rgba(26, 26, 26, 0.46);
+}
+html.light .w144-row {
+  color: rgba(26, 26, 26, 0.65);
+}
+html.light .w144-row svg {
+  color: rgba(26, 26, 26, 0.46);
+}
+html.light .w144-row:hover {
+  color: rgba(26, 26, 26, 0.9);
+  background: rgba(0, 0, 0, 0.03);
+}
+html.light .w144-row.is-head:hover {
+  background: none;
+}
+html.light .w144-row.is-framed,
+html.light .w144-group {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+html.light .w144-row.is-framed {
+  color: rgba(26, 26, 26, 0.9);
+}
+html.light .w144-row.is-framed:first-child svg {
+  color: rgba(26, 26, 26, 0.65);
+}
+html.light .w144-avatar {
+  color: rgba(26, 26, 26, 0.65);
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+html.light .w144-profile-name {
+  color: rgba(26, 26, 26, 0.85);
+}
+html.light .w144-profile-company {
+  color: rgba(26, 26, 26, 0.46);
+}
+html.light .w144-work::before {
+  background: linear-gradient(
+    180deg,
+    rgba(242, 173, 10, 0.6),
+    rgba(242, 173, 10, 0.45) 22%,
+    rgba(242, 173, 10, 0.27) 62%,
+    rgba(242, 173, 10, 0.08)
+  );
+}
