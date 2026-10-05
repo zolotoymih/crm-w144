@@ -109,6 +109,14 @@
   color: rgba(240, 237, 230, 0.9);
   background: rgba(255, 255, 255, 0.03);
 }
+.w144-count {
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: rgba(232, 169, 64, 0.12);
+  font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: #e8a940;
+}
 .w144-row.is-framed {
   color: rgba(240, 237, 230, 0.92);
   border-radius: 8px;

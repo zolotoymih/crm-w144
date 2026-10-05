@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
@@ -59,7 +59,39 @@ export const W144OtherProducts = () => (
   </div>
 );
 
+// The engine's unread notifications for the count on the Notifications row.
+// The engine answers across origins with the shared sign-in cookie; while
+// it does not answer, the row simply has no count.
+const W144_ENGINE_URL =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:3001'
+    : W144_APP_URL;
+
+const useW144Unread = () => {
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    let live = true;
+    const load = () =>
+      fetch(`${W144_ENGINE_URL}/api/w144/notifications/unread`, {
+        credentials: 'include',
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => {
+          if (live && j?.data) setUnread(j.data.count ?? 0);
+        })
+        .catch(() => {});
+    load();
+    const t = window.setInterval(load, 60000);
+    return () => {
+      live = false;
+      window.clearInterval(t);
+    };
+  }, []);
+  return unread;
+};
+
 export const W144PanelBottom = () => {
+  const unread = useW144Unread();
   const currentWorkspaceMember = useAtomStateValue(currentWorkspaceMemberState);
   const currentWorkspace = useAtomStateValue(currentWorkspaceState);
   const name = [
@@ -78,6 +110,7 @@ export const W144PanelBottom = () => {
           <W144Icon name="bell" />
           Notifications
         </span>
+        {unread > 0 && <span className="w144-count">{unread}</span>}
       </a>
       <div className="w144-gap-10" />
       <W144ProfileMenu
