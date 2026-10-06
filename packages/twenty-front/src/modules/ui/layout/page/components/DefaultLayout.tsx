@@ -73,7 +73,7 @@ export const DefaultLayout = () => {
   return (
     <>
       <FileUploadProvider>
-        <StyledLayout>
+        <StyledLayout className="w144-layout">
           <AppErrorBoundary FallbackComponent={AppFullScreenErrorFallback}>
             <InformationBannerIsImpersonating />
             <LayoutCustomizationBar />

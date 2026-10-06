@@ -265,7 +265,15 @@
   text-overflow: ellipsis;
 }
 
-/* the work area: a sheet lifted off the floor, lit along its top-left edge */
+/* the page floor of software_hub.html (body::before there): a navy glow in two
+   corners over #030508, under the whole shell in the dark theme */
+html.dark .w144-layout {
+  background:
+    linear-gradient(140deg, #040b22 0%, #030710 30%, #030508 55%, #030710 75%, #040a1e 100%),
+    #030508;
+}
+
+/* the work area: a softer gold rim along its top-left edge marks where it is */
 .w144-work {
   position: relative;
   border-top-left-radius: 16px;
@@ -281,10 +289,10 @@
   padding: 1px 0 0 1px;
   background: linear-gradient(
     180deg,
-    hsla(40, 80%, 65%, 0.6),
-    hsla(40, 80%, 65%, 0.45) 22%,
-    hsla(40, 80%, 65%, 0.27) 62%,
-    hsla(40, 80%, 65%, 0.08)
+    hsla(40, 55%, 68%, 0.46),
+    hsla(40, 55%, 68%, 0.34) 22%,
+    hsla(40, 55%, 68%, 0.2) 62%,
+    hsla(40, 55%, 68%, 0.06)
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
