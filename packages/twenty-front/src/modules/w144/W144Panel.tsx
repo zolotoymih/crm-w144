@@ -23,7 +23,7 @@ export const W144PanelTop = () => (
     <div className="w144-gap-18" />
     <div className="w144-divider" />
     <div className="w144-gap-16" />
-    <div className="w144-label">Menu</div>
+    <div className="w144-label">MENU</div>
     <div className="w144-gap-10" />
   </div>
 );
