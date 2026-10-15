@@ -302,7 +302,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
         connection.status !== 'connected'
       ) {
         throw new UnauthorizedException(
-          `External Twenty connection is in '${connection.status}' state — test the connection first`,
+          `External Twenty connection is in '${connection.status}' state. Test the connection first`,
         );
       }
 

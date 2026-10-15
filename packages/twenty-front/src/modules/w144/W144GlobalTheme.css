@@ -8,87 +8,103 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────── W144 LIGHT ─────────────────────────── */
+/* System tokens (software/w144-tokens-light.css): page #E8E4DC, lift #EDE9E2,
+   raised #FFFFFF, text #1A1A1A, one gold #F2AD0A (deep #D99A00), green
+   #0E9A68, red #DC2828, rims black at 0.06 / 0.10 / 0.16. */
 html.light {
-  /* Surfaces — warm ivory */
-  --t-background-primary: #FBF9F4;            /* cards, panels */
-  --t-background-secondary: #F1ECE1;          /* page background */
-  --t-background-tertiary: #EAE4D6;           /* elevated / hover rows */
-  --t-background-quaternary: rgba(38, 30, 16, 0.05);
-  --t-background-transparent-lighter: rgba(38, 30, 16, 0.015);
-  --t-background-transparent-light: rgba(38, 30, 16, 0.03);
-  --t-background-transparent-medium: rgba(38, 30, 16, 0.06);
-  --t-background-transparent-strong: rgba(38, 30, 16, 0.10);
-  /* Inverted surfaces (tooltips, dark chips) → dark in light mode */
-  --t-background-primary-inverted: #1B1710;
-  --t-background-inverted-primary: #1B1710;
-  --t-background-inverted-secondary: #2A2418;
+  /* Surfaces */
+  --t-background-primary: #ede9e2; /* cards, panels */
+  --t-background-secondary: #e8e4dc; /* page background */
+  --t-background-tertiary: #ffffff; /* elevated / hover rows */
+  --t-background-noisy: #e8e4dc;
+  --t-background-quaternary: rgba(0, 0, 0, 0.05);
+  --t-background-transparent-lighter: rgba(0, 0, 0, 0.015);
+  --t-background-transparent-light: rgba(0, 0, 0, 0.03);
+  --t-background-transparent-medium: rgba(0, 0, 0, 0.06);
+  --t-background-transparent-strong: rgba(0, 0, 0, 0.1);
+  /* Inverted surfaces: dark in light mode */
+  --t-background-primary-inverted: #1a1a1a;
+  --t-background-inverted-primary: #1a1a1a;
+  --t-background-inverted-secondary: #333333;
 
-  /* Text — warm near-black */
-  --t-font-color-primary: #1B1710;
-  --t-font-color-secondary: rgba(27, 23, 16, 0.66);
-  --t-font-color-tertiary: rgba(27, 23, 16, 0.46);
-  --t-font-color-light: rgba(27, 23, 16, 0.35);
-  --t-font-color-extra-light: rgba(27, 23, 16, 0.20);
-  --t-font-color-inverted: #FBF9F4;
+  /* Text */
+  --t-font-color-primary: #1a1a1a;
+  --t-font-color-secondary: rgba(26, 26, 26, 0.65);
+  --t-font-color-tertiary: rgba(26, 26, 26, 0.46);
+  --t-font-color-light: rgba(26, 26, 26, 0.35);
+  --t-font-color-extra-light: rgba(26, 26, 26, 0.2);
+  --t-font-color-inverted: #e8e4dc;
 
-  /* Borders — gold-tinted */
-  --t-border-color-medium: rgba(176, 138, 62, 0.22);
-  --t-border-color-light: rgba(38, 30, 16, 0.08);
-  --t-border-color-strong: rgba(176, 138, 62, 0.40);
+  /* Borders */
+  --t-border-color-medium: rgba(0, 0, 0, 0.1);
+  --t-border-color-light: rgba(0, 0, 0, 0.06);
+  --t-border-color-strong: rgba(242, 173, 10, 0.45);
 
-  /* Accent — deep gold (contrast on light) */
-  --t-accent-primary: #B0862F;
-  --t-accent-secondary: rgba(176, 138, 62, 0.18);
-  --t-accent-tertiary: rgba(176, 138, 62, 0.10);
-  --t-accent-quaternary: rgba(176, 138, 62, 0.06);
-  /* Twenty uses blue for primary actions / selection / links → gold */
-  --t-color-blue: #B0862F;
-  --t-color-blue-10: #B0862F;
-  --t-color-blue3: rgba(176, 138, 62, 0.10);
-  --t-color-blue4: rgba(176, 138, 62, 0.16);
-  --t-tag-background-blue: rgba(176, 138, 62, 0.16);
-  --t-tag-text-blue: #7A5A1E;
+  /* Accent: the one light gold */
+  --t-accent-primary: #f2ad0a;
+  --t-accent-secondary: rgba(242, 173, 10, 0.18);
+  --t-accent-tertiary: rgba(242, 173, 10, 0.1);
+  --t-accent-quaternary: rgba(242, 173, 10, 0.06);
+  /* blue to gold for primary actions, selection and links; text in the
+     deeper gold. Neither reaches 4.5 to 1 on #E8E4DC (about 2 to 1): the
+     tokens have no darker gold, so this waits for the owner */
+  --t-color-blue: #d99a00;
+  --t-color-blue-10: #d99a00;
+  --t-color-blue3: rgba(242, 173, 10, 0.1);
+  --t-color-blue4: rgba(242, 173, 10, 0.16);
+  --t-tag-background-blue: rgba(242, 173, 10, 0.16);
+  --t-tag-text-blue: #d99a00;
+  /* states */
+  --t-color-green: #0e9a68;
+  --t-color-red: #dc2828;
 }
 
 /* ─────────────────────────── W144 DARK ──────────────────────────── */
+/* System tokens (software/w144-tokens.css): page #030508, surfaces #060A12,
+   text #F0EDE6, gold #FFD98A for accent, selection and links, gold-deep
+   #D4B46E for tag text, green #22C88A, red #E85050. */
 html.dark {
-  /* Surfaces — warm dark */
-  --t-background-primary: #16130F;            /* cards, panels */
-  --t-background-secondary: #0C0B0A;          /* page background */
-  --t-background-tertiary: #1E1A14;           /* elevated / hover rows */
+  /* Surfaces */
+  --t-background-primary: #060a12; /* cards, panels */
+  --t-background-secondary: #030508; /* page background */
+  --t-background-tertiary: #0b1120; /* elevated / hover rows */
+  --t-background-noisy: #030508;
   --t-background-quaternary: rgba(255, 255, 255, 0.05);
   --t-background-transparent-lighter: rgba(255, 255, 255, 0.015);
   --t-background-transparent-light: rgba(255, 255, 255, 0.03);
   --t-background-transparent-medium: rgba(255, 255, 255, 0.06);
-  --t-background-transparent-strong: rgba(255, 255, 255, 0.10);
-  /* Inverted surfaces → light in dark mode */
-  --t-background-primary-inverted: #EDE6D6;
-  --t-background-inverted-primary: #EDE6D6;
-  --t-background-inverted-secondary: #D8D0BE;
+  --t-background-transparent-strong: rgba(255, 255, 255, 0.1);
+  /* Inverted surfaces: light in dark mode */
+  --t-background-primary-inverted: #f0ede6;
+  --t-background-inverted-primary: #f0ede6;
+  --t-background-inverted-secondary: #d9d5cc;
 
-  /* Text — warm off-white */
-  --t-font-color-primary: #EDE6D6;
-  --t-font-color-secondary: rgba(237, 230, 214, 0.66);
-  --t-font-color-tertiary: rgba(237, 230, 214, 0.46);
-  --t-font-color-light: rgba(237, 230, 214, 0.35);
-  --t-font-color-extra-light: rgba(237, 230, 214, 0.20);
-  --t-font-color-inverted: #16130F;
+  /* Text */
+  --t-font-color-primary: #f0ede6;
+  --t-font-color-secondary: rgba(240, 237, 230, 0.65);
+  --t-font-color-tertiary: rgba(240, 237, 230, 0.46);
+  --t-font-color-light: rgba(240, 237, 230, 0.35);
+  --t-font-color-extra-light: rgba(240, 237, 230, 0.2);
+  --t-font-color-inverted: #060a12;
 
-  /* Borders — gold-tinted */
-  --t-border-color-medium: rgba(201, 169, 97, 0.16);
-  --t-border-color-light: rgba(255, 255, 255, 0.07);
-  --t-border-color-strong: rgba(201, 169, 97, 0.32);
+  /* Borders */
+  --t-border-color-medium: rgba(255, 255, 255, 0.1);
+  --t-border-color-light: rgba(255, 255, 255, 0.06);
+  --t-border-color-strong: rgba(255, 217, 138, 0.32);
 
-  /* Accent — W144 gold */
-  --t-accent-primary: #C9A961;
-  --t-accent-secondary: rgba(201, 169, 97, 0.18);
-  --t-accent-tertiary: rgba(201, 169, 97, 0.10);
-  --t-accent-quaternary: rgba(201, 169, 97, 0.06);
-  /* blue → gold for primary actions / selection / links */
-  --t-color-blue: #C9A961;
-  --t-color-blue-10: #C9A961;
-  --t-color-blue3: rgba(201, 169, 97, 0.10);
-  --t-color-blue4: rgba(201, 169, 97, 0.16);
-  --t-tag-background-blue: rgba(201, 169, 97, 0.16);
-  --t-tag-text-blue: #E6C87E;
+  /* Accent: W144 gold */
+  --t-accent-primary: #ffd98a;
+  --t-accent-secondary: rgba(255, 217, 138, 0.18);
+  --t-accent-tertiary: rgba(255, 217, 138, 0.1);
+  --t-accent-quaternary: rgba(255, 217, 138, 0.06);
+  /* blue to gold for primary actions, selection and links */
+  --t-color-blue: #ffd98a;
+  --t-color-blue-10: #ffd98a;
+  --t-color-blue3: rgba(255, 217, 138, 0.1);
+  --t-color-blue4: rgba(255, 217, 138, 0.16);
+  --t-tag-background-blue: rgba(255, 217, 138, 0.16);
+  --t-tag-text-blue: #d4b46e;
+  /* states */
+  --t-color-green: #22c88a;
+  --t-color-red: #e85050;
 }

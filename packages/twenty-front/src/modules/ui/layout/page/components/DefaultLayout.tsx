@@ -13,6 +13,7 @@ import { useIsSettingsPage } from '@/navigation/hooks/useIsSettingsPage';
 import { OBJECT_SETTINGS_WIDTH } from '@/settings/data-model/constants/ObjectSettings';
 import { SignInAppNavigationDrawerMock } from '@/sign-in-background-mock/components/SignInAppNavigationDrawerMock';
 import { Suspense, lazy, useContext } from 'react';
+import { W144TopBar } from '@/w144/W144TopBar';
 
 const SignInBackgroundMockPage = lazy(() =>
   import('@/sign-in-background-mock/components/SignInBackgroundMockPage').then(
@@ -72,10 +73,11 @@ export const DefaultLayout = () => {
   return (
     <>
       <FileUploadProvider>
-        <StyledLayout>
+        <StyledLayout className="w144-layout">
           <AppErrorBoundary FallbackComponent={AppFullScreenErrorFallback}>
             <InformationBannerIsImpersonating />
             <LayoutCustomizationBar />
+            {!showAuthModal && !useShowFullScreen && <W144TopBar />}
             <StyledPageContainer
               animate={{
                 marginLeft:
@@ -118,7 +120,7 @@ export const DefaultLayout = () => {
                     </AnimatePresence>
                   </>
                 ) : (
-                  <StyledMainContainer>
+                  <StyledMainContainer className="w144-work">
                     <AppErrorBoundary FallbackComponent={AppPageErrorFallback}>
                       <Outlet />
                     </AppErrorBoundary>
