@@ -43,6 +43,9 @@
 }
 .w144-search-input::placeholder { color: rgba(240, 237, 230, 0.4); }
 .w144-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: 'Riviera Nights', Inter, sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -303,6 +306,9 @@ html.dark .w144-layout {
 
 /* light theme: the same shell in the light tokens (text #1A1A1A, black rims,
    the one light gold #F2AD0A along the work area's edge) */
+/* the mark beside the wordmark (W144Mark.tsx): its navy cuts take the top bar's floor */
+.w144-wordmark svg { flex: none; --mark-bg: #05080f; filter: drop-shadow(0 0 6px rgba(255, 217, 138, 0.22)); }
+html.light .w144-wordmark svg { --mark-bg: #ffffff; --mark-gold: #b8862e; filter: none; }
 html.light .w144-wordmark {
   color: rgba(26, 26, 26, 0.85);
 }
