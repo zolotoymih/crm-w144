@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro';
 import { useOpenSettingsMenu } from '@/navigation/hooks/useOpenSettings';
+import { openW144Nav } from '@/w144/W144NavButton';
 import { styled } from '@linaria/react';
 import { isNonEmptyString } from '@sniptt/guards';
 import { type ReactNode, useContext } from 'react';
@@ -49,8 +50,11 @@ export const MobileBreadcrumb = ({
   const { theme } = useContext(ThemeContext);
   const { openSettingsMenu } = useOpenSettingsMenu();
 
+  // W144: the settings list lives in the W144 drawer, so going back to it
+  // opens the drawer
   const handleBackToSettingsClick = () => {
     openSettingsMenu();
+    openW144Nav();
   };
 
   const previousLink = links[links.length - 2];

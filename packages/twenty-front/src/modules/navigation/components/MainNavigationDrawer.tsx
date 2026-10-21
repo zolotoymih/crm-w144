@@ -26,22 +26,16 @@ export const MainNavigationDrawer = ({ className }: { className?: string }) => {
     navigationDrawerActiveTabState,
   );
   const currentWorkspace = useAtomStateValue(currentWorkspaceState);
-  const [isNavigationDrawerExpanded, setIsNavigationDrawerExpanded] =
-    useAtomState(isNavigationDrawerExpandedState);
+  const isNavigationDrawerExpanded = useAtomStateValue(
+    isNavigationDrawerExpandedState,
+  );
   const isMobile = useIsMobile();
 
   const [navigationDrawerWidth, setNavigationDrawerWidth] = useAtomState(
     navigationDrawerWidthState,
   );
 
-  // W144: the panel stands still on a computer, so a drawer folded or
-  // resized earlier (both live in local storage) comes back open at 236
-  useEffect(() => {
-    if (!isMobile && !isNavigationDrawerExpanded) {
-      setIsNavigationDrawerExpanded(true);
-    }
-  }, [isMobile, isNavigationDrawerExpanded, setIsNavigationDrawerExpanded]);
-
+  // W144: a drawer resized earlier (local storage) comes back at 236
   useEffect(() => {
     if (navigationDrawerWidth !== NAVIGATION_DRAWER_CONSTRAINTS.default) {
       setNavigationDrawerWidth(NAVIGATION_DRAWER_CONSTRAINTS.default);
@@ -66,13 +60,13 @@ export const MainNavigationDrawer = ({ className }: { className?: string }) => {
   );
 
   // W144: the drawer is the W144 panel; Twenty's content is the body of the
-  // open CRM group. On a phone Twenty's drawer stays as it was.
+  // open CRM group, on every size.
   return (
     <NavigationDrawer
       className={className}
       title={currentWorkspace?.displayName ?? ''}
     >
-      {isNavigationDrawerExpanded && !isMobile ? (
+      {isNavigationDrawerExpanded || isMobile ? (
         <div className="w144-panel">
           <W144PanelTop />
           <W144CrmGroup>{twentyContent}</W144CrmGroup>

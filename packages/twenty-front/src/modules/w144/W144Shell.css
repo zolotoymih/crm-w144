@@ -364,3 +364,49 @@ html.light .w144-work::before {
     rgba(242, 173, 10, 0.08)
   );
 }
+
+/* ── The shell on a phone and an iPad (owner 2026-10-21) ──
+   As in the other hubs' shell.css. Under 900 the panel leaves the row: it
+   waits off the left edge and the menu button (W144NavButton) slides it in
+   over the work area on a dark glass, a scrim behind it. The work area takes
+   the full width, without its gold corner rim. Twenty's mobile bottom bar is
+   gone (DefaultLayout), the panel is the one navigation on every size. */
+.w144-navbtn,
+.w144-navscrim {
+  display: none;
+}
+@media (max-width: 899px) {
+  .w144-topbar { gap: 6px; padding: 0 16px 0 8px; }
+  .w144-navbtn { position: relative; display: block; width: 40px; height: 40px; flex: none; padding: 0; border: 0; border-radius: 10px; background: none; cursor: pointer; }
+  .w144-navbtn i { position: absolute; left: 11px; right: 11px; height: 1.5px; border-radius: 1px; background: rgba(240, 237, 230, 0.85); transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), top 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .w144-navbtn i:first-child { top: 15px; }
+  .w144-navbtn i:last-child { top: 23px; }
+  .w144-navbtn.is-open i:first-child { top: 19px; transform: rotate(45deg); }
+  .w144-navbtn.is-open i:last-child { top: 19px; transform: rotate(-45deg); }
+  .w144-navbtn:focus-visible { outline: 1px solid rgba(255, 217, 138, 0.6); outline-offset: 0; }
+  .w144-wordmark { margin-right: auto; }
+  .w144-search { width: auto; flex: 1 1 auto; max-width: 290px; min-width: 0; margin-left: 10px; }
+  /* the drawer: Twenty's drawer box inside takes its width, at the padding
+     it has on a computer (Twenty pads it 20 a side on a phone) */
+  .w144-layout .w144-navwrap { position: fixed; top: 56px; bottom: 0; left: 0; z-index: 30; width: min(300px, 86vw); background: linear-gradient(180deg, rgb(14, 20, 34), rgb(7, 11, 20)); box-shadow: inset -1px 0 0 hsla(0, 0%, 100%, 0.08), 24px 0 60px -20px rgba(0, 0, 0, 0.7); transform: translateX(-104%); visibility: hidden; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.32s; }
+  .w144-layout.is-nav-open .w144-navwrap { transform: none; visibility: visible; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .w144-navwrap > div { width: 100%; }
+  .w144-navwrap > div > div { width: 100%; padding: 12px 0 16px 8px; }
+  /* Twenty sets its items a size up on a phone; in the panel they keep the
+     size they have on a computer, beside the W144 rows */
+  .w144-navwrap .navigation-drawer-item { font-size: var(--t-font-size-md); }
+  .w144-navscrim { position: fixed; top: 56px; left: 0; right: 0; bottom: 0; z-index: 29; display: block; background: rgba(2, 4, 8, 0.6); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+  .w144-layout.is-nav-open .w144-navscrim { opacity: 1; pointer-events: auto; }
+  /* the settings pages centre themselves beside the panel on a computer */
+  .w144-pagerow { margin-left: 0 !important; }
+  .w144-work { border-top-left-radius: 0; }
+  .w144-work::before { display: none; }
+  html.light .w144-navbtn i { background: rgba(26, 26, 26, 0.85); }
+  html.light .w144-layout .w144-navwrap { background: var(--t-background-secondary); box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1), 24px 0 60px -20px rgba(0, 0, 0, 0.25); }
+  html.light .w144-navscrim { background: rgba(0, 0, 0, 0.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .w144-layout .w144-navwrap,
+  .w144-navscrim,
+  .w144-navbtn i { transition: none; }
+}
