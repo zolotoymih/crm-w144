@@ -15,6 +15,10 @@ import { type PartialUserWithPicture } from 'src/engine/core-modules/auth/types/
 import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import {
+  toW144CrmRoleKind,
+  W144CrmRoleService,
+} from 'src/engine/core-modules/auth/services/w144-crm-role.service';
+import {
   SUPABASE_AUTH_CLIENT,
   type SupabaseAuthClient,
 } from 'src/engine/core-modules/auth/services/supabase-auth-client.provider';
@@ -60,6 +64,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
     private readonly workspaceCacheService: WorkspaceCacheService,
     private readonly coreEntityCacheService: CoreEntityCacheService,
     private readonly jitService: JitWorkspaceProvisioningService,
+    private readonly w144CrmRoleService: W144CrmRoleService,
     @Inject(SUPABASE_AUTH_CLIENT)
     supabaseAuthClient: SupabaseAuthClient,
   ) {
@@ -260,7 +265,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       const { data: profile, error: profileError } = await this.supabase
         .from('profiles')
-        .select('company_id, is_active')
+        .select('company_id, is_active, role')
         .eq('id', payload.sub)
         .maybeSingle();
 
@@ -279,8 +284,11 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
       if (profile.is_active === false) {
         throw new UnauthorizedException('Access to this company was taken away');
       }
+
+      const w144CrmRoleKind = toW144CrmRoleKind(profile.role);
+
       this.logger.debug(
-        `validate: profile lookup OK, company_id=${profile.company_id}`,
+        `validate: profile lookup OK, company_id=${profile.company_id}, role=${profile.role}`,
       );
 
       const { data: connection, error: connectionError } = await this.supabase
@@ -331,11 +339,21 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
       // Branch on hosting mode: JIT-provision for hosted+null, otherwise standard sign-in.
       let workspace: WorkspaceEntity;
       let user: UserEntity;
+      let crmRoleId: string;
 
       if (
         connection.platform === 'twenty-hosted' &&
         !connection.workspace_id
       ) {
+        // Whoever creates the workspace becomes its first Admin, which Twenty
+        // will not take away while they are the only one. So only a W144
+        // owner or admin may be the first to open the CRM.
+        if (w144CrmRoleKind !== 'admin') {
+          throw new UnauthorizedException(
+            'The CRM is not set up yet. Ask a W144 owner or admin to open it first.',
+          );
+        }
+
         this.logger.debug(
           `validate: triggering JIT provisioning for company=${profile.company_id}`,
         );
@@ -347,6 +365,10 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
         user = result.user;
         workspace = result.workspace;
+        crmRoleId = await this.w144CrmRoleService.resolveRoleId({
+          workspace,
+          w144CrmRoleKind,
+        });
 
         this.logger.debug(
           `validate: JIT provision OK, workspace=${workspace.id}, user=${user.id}`,
@@ -369,9 +391,17 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
           `validate: calling signInUpOnExistingWorkspace (userData.type=${userData.type})`,
         );
 
+        // A person joining the workspace gets the role that matches their
+        // W144 role right away, instead of the default Member role.
+        crmRoleId = await this.w144CrmRoleService.resolveRoleId({
+          workspace,
+          w144CrmRoleKind,
+        });
+
         user = await this.signInUpService.signInUpOnExistingWorkspace({
           workspace,
           userData,
+          roleId: crmRoleId,
         });
 
         this.logger.debug(
@@ -411,6 +441,15 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
       if (!isDefined(userWorkspaceRow)) {
         throw new UnauthorizedException('UserWorkspace link not found');
       }
+
+      // Runs on every request signed in with W144, so a role changed in W144
+      // applies on the next one: owner and admin get Admin, member gets the
+      // default Member role, viewer gets the read-only Viewer (W144) role.
+      await this.w144CrmRoleService.applyRole({
+        workspaceId: workspace.id,
+        userWorkspaceId: userWorkspaceRow.id,
+        roleId: crmRoleId,
+      });
 
       const flatUserWorkspace = await this.coreEntityCacheService.get(
         'userWorkspaceEntity',

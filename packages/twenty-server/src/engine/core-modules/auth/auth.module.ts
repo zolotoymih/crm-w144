@@ -29,6 +29,7 @@ import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/se
 import { MicrosoftAPIsService } from 'src/engine/core-modules/auth/services/microsoft-apis.service';
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
+import { W144CrmRoleService } from 'src/engine/core-modules/auth/services/w144-crm-role.service';
 import { supabaseAuthClientProvider } from 'src/engine/core-modules/auth/services/supabase-auth-client.provider';
 import { UpdateConnectedAccountOnReconnectService } from 'src/engine/core-modules/auth/services/update-connected-account-on-reconnect.service';
 import { SamlAuthStrategy } from 'src/engine/core-modules/auth/strategies/saml.auth.strategy';
@@ -69,6 +70,9 @@ import { ConnectedAccountEntity } from 'src/engine/metadata-modules/connected-ac
 import { MessageChannelEntity } from 'src/engine/metadata-modules/message-channel/entities/message-channel.entity';
 import { ObjectMetadataEntity } from 'src/engine/metadata-modules/object-metadata/object-metadata.entity';
 import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
+import { RoleEntity } from 'src/engine/metadata-modules/role/role.entity';
+import { RoleModule } from 'src/engine/metadata-modules/role/role.module';
+import { UserRoleModule } from 'src/engine/metadata-modules/user-role/user-role.module';
 import { WorkspaceCacheModule } from 'src/engine/workspace-cache/workspace-cache.module';
 import { CalendarChannelSyncStatusService } from 'src/modules/calendar/common/services/calendar-channel-sync-status.service';
 import { ConnectedAccountModule } from 'src/modules/connected-account/connected-account.module';
@@ -101,6 +105,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
       ConnectedAccountEntity,
       MessageChannelEntity,
       CalendarChannelEntity,
+      RoleEntity,
     ]),
     UserWorkspaceModule,
     OnboardingModule,
@@ -127,6 +132,8 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     EnterpriseModule,
     FileModule,
     WorkspaceModule,
+    RoleModule,
+    UserRoleModule,
   ],
   controllers: [
     GoogleAuthController,
@@ -140,6 +147,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
   providers: [
     SignInUpService,
     JitWorkspaceProvisioningService,
+    W144CrmRoleService,
     BtiApiKeyProvisioningService,
     supabaseAuthClientProvider,
     AuthService,
