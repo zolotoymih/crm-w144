@@ -36,6 +36,7 @@ type SupabaseJwtPayload = {
   sub: string;
   email?: string;
   iss?: string;
+  aal?: string;
   user_metadata?: {
     full_name?: string;
     avatar_url?: string;
@@ -250,6 +251,34 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
     }
   }
 
+  // Whether the person has a verified second factor, asked of Supabase at most
+  // once a minute per person (the answer only matters for aal1 sessions).
+  private readonly factorCache = new Map<string, { has: boolean; at: number }>();
+
+  private async hasVerifiedFactor(userId: string): Promise<boolean> {
+    const hit = this.factorCache.get(userId);
+
+    if (hit && Date.now() - hit.at < 60_000) {
+      return hit.has;
+    }
+
+    const { data, error } = await this.supabase.auth.admin.mfa.listFactors({
+      userId,
+    });
+
+    if (error) {
+      throw new UnauthorizedException('Could not check the second sign-in step');
+    }
+
+    const has = (data?.factors ?? []).some(
+      (factor) => factor.status === 'verified',
+    );
+
+    this.factorCache.set(userId, { has, at: Date.now() });
+
+    return has;
+  }
+
   async validate(payload: SupabaseJwtPayload): Promise<AuthContext> {
     this.logger.debug(
       `validate: payload sub=${payload.sub} email=${payload.email}`,
@@ -261,6 +290,13 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       if (!payload.email || !payload.sub) {
         throw new UnauthorizedException('Token is missing email or sub');
+      }
+
+      // The second sign-in step, as in W144 itself: a person with a verified
+      // factor gets in only with a session that finished it (aal2). A
+      // password alone used to open the CRM.
+      if (payload.aal !== 'aal2' && (await this.hasVerifiedFactor(payload.sub))) {
+        throw new UnauthorizedException('Finish the second sign-in step in W144 first');
       }
 
       const { data: profile, error: profileError } = await this.supabase
