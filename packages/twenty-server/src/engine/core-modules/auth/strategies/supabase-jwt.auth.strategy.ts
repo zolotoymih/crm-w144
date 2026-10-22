@@ -260,7 +260,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       const { data: profile, error: profileError } = await this.supabase
         .from('profiles')
-        .select('company_id')
+        .select('company_id, is_active')
         .eq('id', payload.sub)
         .maybeSingle();
 
@@ -272,6 +272,12 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       if (!profile?.company_id) {
         throw new UnauthorizedException('User has no W144 company');
+      }
+
+      // A person whose access was taken away in W144 (Settings, Team) is
+      // refused here too; the CRM used to keep letting them in.
+      if (profile.is_active === false) {
+        throw new UnauthorizedException('Access to this company was taken away');
       }
       this.logger.debug(
         `validate: profile lookup OK, company_id=${profile.company_id}`,
@@ -296,23 +302,15 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
         );
       }
 
-      // External Connector mode: connection must be tested before use.
-      if (
-        connection.platform === 'twenty' &&
-        connection.status !== 'connected'
-      ) {
+      // Signing in with W144 opens only the CRM W144 hosts for the company. A
+      // company on its own Twenty ('twenty') signs in there; its workspace_id
+      // names a workspace on another server, and following it here let a
+      // company that typed another company's workspace id into its own row
+      // join that company's CRM.
+      if (connection.platform !== 'twenty-hosted') {
         throw new UnauthorizedException(
-          `External Twenty connection is in '${connection.status}' state. Test the connection first`,
+          'This company uses its own CRM; sign in there',
         );
-      }
-
-      // Non-hosted platforms require workspace_id to be set.
-      // For 'twenty-hosted' with NULL workspace_id, JIT provisioning happens below.
-      if (
-        connection.platform !== 'twenty-hosted' &&
-        !connection.workspace_id
-      ) {
-        throw new UnauthorizedException('CRM Hub workspace not configured');
       }
       this.logger.debug(
         `validate: hub_connection lookup OK, platform=${connection.platform}, workspace_id=${connection.workspace_id ?? 'null (JIT-pending)'}`,
