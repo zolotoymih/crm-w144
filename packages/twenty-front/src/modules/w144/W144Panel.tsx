@@ -2,7 +2,12 @@ import { type ReactNode, useEffect, useState } from 'react';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
-import { W144Chevron, W144Icon } from '@/w144/W144Icons';
+import {
+  W144_ENGINE_URL,
+  W144ProductMarks,
+  W144ProductRow,
+} from '@/w144/W144EngineState';
+import { W144Icon } from '@/w144/W144Icons';
 import { W144ProfileMenu } from '@/w144/W144ProfileMenu';
 import { W144_APP_URL, W144_PRODUCTS } from '@/w144/w144Products';
 
@@ -35,24 +40,18 @@ export const W144CrmGroup = ({ children }: { children: ReactNode }) => (
         <W144Icon name="crm" />
         CRM
       </span>
-      <W144Chevron />
+      <W144ProductMarks code="crm" />
     </a>
     <div className="w144-group-body">{children}</div>
   </div>
 );
 
-/** The products after CRM, each leading to its own domain. */
+/** The products after CRM, each leading to its own domain, with its marks. */
 export const W144OtherProducts = () => (
   <div className="w144-products">
     {W144_PRODUCTS.filter((product) => product.code !== 'crm').map(
       (product) => (
-        <a className="w144-row" key={product.code} href={product.href}>
-          <span>
-            <W144Icon name={product.code} />
-            {product.name}
-          </span>
-          <W144Chevron />
-        </a>
+        <W144ProductRow key={product.code} product={product} />
       ),
     )}
   </div>
@@ -61,10 +60,6 @@ export const W144OtherProducts = () => (
 // The engine's unread notifications for the count on the Notifications row.
 // The engine answers across origins with the shared sign-in cookie; while
 // it does not answer, the row simply has no count.
-const W144_ENGINE_URL =
-  window.location.hostname === 'localhost'
-    ? 'http://localhost:3001'
-    : W144_APP_URL;
 
 const useW144Unread = () => {
   const [unread, setUnread] = useState(0);

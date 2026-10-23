@@ -12,6 +12,7 @@ import { useIsSettingsPage } from '@/navigation/hooks/useIsSettingsPage';
 import { OBJECT_SETTINGS_WIDTH } from '@/settings/data-model/constants/ObjectSettings';
 import { SignInAppNavigationDrawerMock } from '@/sign-in-background-mock/components/SignInAppNavigationDrawerMock';
 import { Suspense, lazy, useContext } from 'react';
+import { W144TensionStrip } from '@/w144/W144EngineState';
 import { W144TopBar } from '@/w144/W144TopBar';
 
 const SignInBackgroundMockPage = lazy(() =>
@@ -124,9 +125,18 @@ export const DefaultLayout = () => {
                   </>
                 ) : (
                   <StyledMainContainer className="w144-work">
-                    <AppErrorBoundary FallbackComponent={AppPageErrorFallback}>
-                      <Outlet />
-                    </AppErrorBoundary>
+                    {/* W144: the tensions strip sits above the page; the page
+                        keeps the row it had, one level down */}
+                    <div className="w144-workcol">
+                      <W144TensionStrip />
+                      <div className="w144-workpage">
+                        <AppErrorBoundary
+                          FallbackComponent={AppPageErrorFallback}
+                        >
+                          <Outlet />
+                        </AppErrorBoundary>
+                      </div>
+                    </div>
                   </StyledMainContainer>
                 )}
               </PageDragDropProvider>
