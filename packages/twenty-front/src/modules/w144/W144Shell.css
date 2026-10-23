@@ -305,6 +305,84 @@ html.dark .w144-layout {
   mask-composite: exclude;
 }
 
+/* the tensions strip above the page (W144EngineState.tsx), Finance's look;
+   the page keeps a flex row of its own below it, as the work area was */
+.w144-workcol {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.w144-workpage {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.w144-tstrip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 52px;
+  flex: none;
+  padding: 0 38px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.w144-tstrip-label,
+.w144-tstrip-count,
+.w144-tstrip-why {
+  font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+}
+.w144-tstrip-label {
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  white-space: nowrap;
+  color: rgba(240, 237, 230, 0.5);
+}
+.w144-tstrip-count {
+  font-weight: 400;
+  color: #ffd98a;
+}
+.w144-tstrip-why {
+  min-width: 0;
+  color: rgba(240, 237, 230, 0.3);
+}
+.w144-tstrip-open {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: rgba(240, 237, 230, 0.6);
+  text-decoration: none;
+}
+.w144-tstrip-open:hover {
+  color: rgba(240, 237, 230, 0.85);
+}
+
+/* product row marks (spec 01-platform, shell items 6 and 7): nothing
+   connected sits at 40 percent with no dot; a critical tension puts a 6 px
+   dot in the severity colour beside the chevron, never a number */
+.w144-row.is-off {
+  opacity: 0.4;
+}
+.w144-marks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.w144-pdot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e85050;
+}
+
 /* light theme: the same shell in the light tokens (text #1A1A1A, black rims,
    the one light gold #F2AD0A along the work area's edge) */
 /* the mark beside the wordmark (W144Mark.tsx): its navy cuts take the top bar's floor */
@@ -356,6 +434,21 @@ html.light .w144-profile-name {
 html.light .w144-profile-company {
   color: rgba(26, 26, 26, 0.46);
 }
+html.light .w144-tstrip {
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+html.light .w144-tstrip-label {
+  color: rgba(26, 26, 26, 0.55);
+}
+html.light .w144-tstrip-count {
+  color: #b8862e;
+}
+html.light .w144-tstrip-why {
+  color: rgba(26, 26, 26, 0.46);
+}
+html.light .w144-tstrip-open {
+  color: rgba(26, 26, 26, 0.65);
+}
 html.light .w144-work::before {
   background: linear-gradient(
     180deg,
@@ -402,6 +495,7 @@ html.light .w144-work::before {
   .w144-pagerow { margin-left: 0 !important; }
   .w144-work { border-top-left-radius: 0; }
   .w144-work::before { display: none; }
+  .w144-tstrip { flex-wrap: wrap; height: auto; min-height: 52px; padding: 10px 16px; gap: 6px 14px; }
   html.light .w144-navbtn i { background: rgba(26, 26, 26, 0.85); }
   html.light .w144-layout .w144-navwrap { background: var(--t-background-secondary); box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1), 24px 0 60px -20px rgba(0, 0, 0, 0.25); }
   html.light .w144-navscrim { background: rgba(0, 0, 0, 0.25); }
