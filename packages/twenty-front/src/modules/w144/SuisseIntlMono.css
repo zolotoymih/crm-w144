@@ -1,0 +1,10 @@
+/* W144 Suisse Intl Mono: the trial file the other hubs use (DECISIONS 120),
+   regular only because the panel's labels and counts use no other weight. */
+
+@font-face {
+  font-family: 'Suisse Intl Mono';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('./fonts/SuisseIntlMono-Regular-WebTrial.ttf') format('truetype');
+}
