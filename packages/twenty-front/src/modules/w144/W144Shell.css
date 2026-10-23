@@ -2,6 +2,7 @@
    Companies, in the W144 shell»). Sizes from the frame; fills, rims and type
    from the W144 design catalogue, the same as the other hubs' shell.css. */
 @import './RivieraNights.css';
+@import './SuisseIntlMono.css';
 
 .w144-topbar {
   display: flex;
