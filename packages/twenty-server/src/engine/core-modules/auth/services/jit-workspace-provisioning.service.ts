@@ -12,6 +12,7 @@ import {
   type SupabaseAuthClient,
 } from 'src/engine/core-modules/auth/services/supabase-auth-client.provider';
 import { UserEntity } from 'src/engine/core-modules/user/user.entity';
+import { W144OpportunityLostStageService } from 'src/engine/core-modules/auth/services/w144-opportunity-lost-stage.service';
 import { WorkspaceService } from 'src/engine/core-modules/workspace/services/workspace.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 
@@ -39,6 +40,7 @@ export class JitWorkspaceProvisioningService {
     @Inject(SUPABASE_AUTH_CLIENT)
     private readonly supabaseAuthClient: SupabaseAuthClient,
     private readonly btiApiKeyProvisioningService: BtiApiKeyProvisioningService,
+    private readonly w144OpportunityLostStageService: W144OpportunityLostStageService,
   ) {}
 
   async provision(input: JitProvisionInput): Promise<JitProvisionResult> {
@@ -67,6 +69,19 @@ export class JitWorkspaceProvisioningService {
       this.logger.log(
         `activateWorkspace OK: workspace=${workspace.id}, displayName="${displayName}"`,
       );
+
+      // 2b. Add the opportunity stage "Lost" after Customer so the engine can
+      // count lost deals. Non-fatal: the workspace works without it and an
+      // admin can add the option in Settings.
+      try {
+        await this.w144OpportunityLostStageService.ensureLostStage(
+          workspace.id,
+        );
+      } catch (lostStageError) {
+        this.logger.warn(
+          `Lost stage setup failed for workspace=${workspace.id} (non-fatal): ${lostStageError instanceof Error ? lostStageError.message : String(lostStageError)}`,
+        );
+      }
 
       // 3. Race-safe write-back to hub_connections.
       // If workspace_id is already set by a concurrent provisioning, our UPDATE
