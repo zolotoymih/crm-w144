@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 
 import { type AuthContext } from 'src/engine/core-modules/auth/types/auth-context.type';
 import { type PartialUserWithPicture } from 'src/engine/core-modules/auth/types/signInUp.type';
+import { BtiApiKeyProvisioningService } from 'src/engine/core-modules/auth/services/bti-api-key-provisioning.service';
 import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import {
@@ -66,6 +67,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
     private readonly coreEntityCacheService: CoreEntityCacheService,
     private readonly jitService: JitWorkspaceProvisioningService,
     private readonly w144CrmRoleService: W144CrmRoleService,
+    private readonly btiApiKeyProvisioningService: BtiApiKeyProvisioningService,
     @Inject(SUPABASE_AUTH_CLIENT)
     supabaseAuthClient: SupabaseAuthClient,
   ) {
@@ -329,7 +331,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       const { data: connection, error: connectionError } = await this.supabase
         .from('hub_connections')
-        .select('workspace_id, status, platform')
+        .select('workspace_id, status, platform, api_key')
         .eq('company_id', profile.company_id)
         .eq('hub_type', 'crm')
         .maybeSingle();
@@ -377,10 +379,38 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
       let user: UserEntity;
       let crmRoleId: string;
 
-      if (
-        connection.platform === 'twenty-hosted' &&
-        !connection.workspace_id
-      ) {
+      // Connecting the hosted CRM again after a disconnect brings back the
+      // workspace the company had (the engine keeps its id when the CRM is
+      // disconnected). If that workspace was deleted here meanwhile, the
+      // company starts over as on a first connection: the link is cleared
+      // and the first owner or admin to open the CRM sets up a new one.
+      let existingWorkspace: WorkspaceEntity | null = connection.workspace_id
+        ? await this.workspaceRepository.findOne({
+            where: { id: connection.workspace_id },
+          })
+        : null;
+
+      if (connection.workspace_id && !isDefined(existingWorkspace)) {
+        this.logger.warn(
+          `validate: workspace=${connection.workspace_id} of company=${profile.company_id} no longer exists, setting up a new one`,
+        );
+        const { error: clearError } = await this.supabase
+          .from('hub_connections')
+          .update({ workspace_id: null, subdomain: null, api_key: null })
+          .eq('company_id', profile.company_id)
+          .eq('hub_type', 'crm')
+          .eq('platform', 'twenty-hosted')
+          .eq('workspace_id', connection.workspace_id);
+
+        if (clearError) {
+          throw new UnauthorizedException(
+            `Failed to clear the missing CRM workspace: ${clearError.message}`,
+          );
+        }
+        existingWorkspace = null;
+      }
+
+      if (!isDefined(existingWorkspace)) {
         // Whoever creates the workspace becomes its first Admin, which Twenty
         // will not take away while they are the only one. So only a W144
         // owner or admin may be the first to open the CRM.
@@ -410,14 +440,6 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
           `validate: JIT provision OK, workspace=${workspace.id}, user=${user.id}`,
         );
       } else {
-        const existingWorkspace = await this.workspaceRepository.findOne({
-          where: { id: connection.workspace_id! },
-        });
-
-        if (!isDefined(existingWorkspace)) {
-          throw new UnauthorizedException('Twenty workspace not found');
-        }
-
         workspace = existingWorkspace;
         this.logger.debug(
           `validate: workspace lookup OK, id=${workspace.id}`,
@@ -443,6 +465,22 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
         this.logger.debug(
           `validate: signInUpOnExistingWorkspace OK, userId=${user.id}`,
         );
+
+        // A workspace brought back by connecting again has no engine key yet
+        // (the old one left with the old connection): the owner or an admin
+        // opening it makes one, as on the first set up. The same goes for a
+        // workspace set up before the CRM made keys itself. Non-fatal.
+        if (!connection.api_key && w144CrmRoleKind === 'admin') {
+          try {
+            await this.btiApiKeyProvisioningService.mintForCompany(
+              profile.company_id,
+            );
+          } catch (mintError) {
+            this.logger.warn(
+              `BTI api key mint failed for company=${profile.company_id} (non-fatal): ${mintError instanceof Error ? mintError.message : String(mintError)}`,
+            );
+          }
+        }
       }
 
       const flatUser = await this.coreEntityCacheService.get('user', user.id);
