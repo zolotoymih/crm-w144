@@ -1,5 +1,6 @@
 import { W144_APP_URL } from '@/w144/w144Products';
 import { W144Mark } from '@/w144/W144Mark';
+import { W144CompanyGuard } from '@/w144/W144CompanyGuard';
 import { W144NavButton } from '@/w144/W144NavButton';
 
 // The W144 top bar, 56 high, the same on every product: the wordmark leads
@@ -30,6 +31,7 @@ export const W144TopBar = () => {
           autoComplete="off"
         />
       </form>
+      <W144CompanyGuard />
     </header>
   );
 };

@@ -10,6 +10,10 @@ import { AuthGraphqlApiExceptionFilter } from 'src/engine/core-modules/auth/filt
 import { SupabaseJwtAuthStrategy } from 'src/engine/core-modules/auth/strategies/supabase-jwt.auth.strategy';
 import { AccessTokenService } from 'src/engine/core-modules/auth/token/services/access-token.service';
 import { getAuthExceptionRestStatus } from 'src/engine/core-modules/auth/utils/get-auth-exception-rest-status.util';
+import {
+  W144CompanySwitchedException,
+  workspaceOfAccessToken,
+} from 'src/engine/core-modules/auth/utils/w144-company-switched.util';
 import { ExceptionHandlerService } from 'src/engine/core-modules/exception-handler/exception-handler.service';
 import { ErrorCode } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
 import { JwtWrapperService } from 'src/engine/core-modules/jwt/services/jwt-wrapper.service';
@@ -74,6 +78,22 @@ export class MiddlewareService {
 
   // oxlint-disable-next-line @typescripttypescript/no-explicit-any
   public writeGraphqlResponseOnExceptionCaught(res: Response, error: any) {
+    // a window left on another company: refused with its own status, which
+    // the W144 shell in the page answers (W144CompanyGuard)
+    if (error instanceof W144CompanySwitchedException) {
+      res.writeHead(error.status, { 'Content-Type': 'application/json' });
+      res.write(
+        JSON.stringify({
+          errors: [
+            { message: error.message, extensions: { code: error.code } },
+          ],
+        }),
+      );
+      res.end();
+
+      return;
+    }
+
     let errors;
 
     if (error instanceof AuthException) {
@@ -154,10 +174,30 @@ export class MiddlewareService {
 
     if (supabaseToken) {
       try {
-        return await this.supabaseStrategy.verifyAndExtractContext(
-          supabaseToken,
+        const context =
+          await this.supabaseStrategy.verifyAndExtractContext(supabaseToken);
+
+        // The W144 profile decides the workspace on every request; a page
+        // still holding the access token of the workspace it was drawn for
+        // is a window left on the company the person switched away from.
+        const drawnFor = workspaceOfAccessToken(
+          request,
+          (req) => this.jwtWrapperService.extractJwtFromRequest()(req),
+          (token) => this.jwtWrapperService.decode(token),
         );
+
+        if (
+          isDefined(drawnFor) &&
+          isDefined(context.workspace) &&
+          drawnFor !== context.workspace.id
+        ) {
+          throw new W144CompanySwitchedException();
+        }
+
+        return context;
       } catch (error) {
+        if (error instanceof W144CompanySwitchedException) throw error;
+
         const err = error as Error;
 
         this.logger.error(

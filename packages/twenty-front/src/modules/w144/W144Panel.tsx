@@ -9,6 +9,7 @@ import {
 } from '@/w144/W144EngineState';
 import { W144Icon } from '@/w144/W144Icons';
 import { W144ProfileMenu } from '@/w144/W144ProfileMenu';
+import { useW144Me } from '@/w144/w144Me';
 import { W144_APP_URL, W144_PRODUCTS } from '@/w144/w144Products';
 
 // The W144 panel around Twenty's drawer (frame «CRM, Companies, in the W144
@@ -82,29 +83,6 @@ const useW144Unread = () => {
     };
   }, []);
   return unread;
-};
-
-// The W144 company and person, as the engine knows them. Twenty's workspace
-// name is not the company (locally it is a demo workspace), so the profile
-// row shows nothing under the name until the engine answers.
-const useW144Me = () => {
-  const [me, setMe] = useState<{
-    full_name: string | null;
-    company_name: string | null;
-  } | null>(null);
-  useEffect(() => {
-    let live = true;
-    fetch(`${W144_ENGINE_URL}/api/w144/me`, { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        if (live && j?.data) setMe(j.data);
-      })
-      .catch(() => {});
-    return () => {
-      live = false;
-    };
-  }, []);
-  return me;
 };
 
 export const W144PanelBottom = () => {
