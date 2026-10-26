@@ -158,7 +158,7 @@ export const W144ProfileMenu = ({
         </button>
       }
       dropdownComponents={
-        <DropdownContent widthInPixels={204}>
+        <DropdownContent widthInPixels={showCompanies ? 248 : 204}>
           <DropdownMenuItemsContainer>
             {showCompanies && portfolio ? (
               <>
