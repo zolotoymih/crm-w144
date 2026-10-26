@@ -29,6 +29,7 @@ import { MicrosoftAPIsService } from 'src/engine/core-modules/auth/services/micr
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import { W144CrmRoleService } from 'src/engine/core-modules/auth/services/w144-crm-role.service';
+import { W144OpportunityLostStageService } from 'src/engine/core-modules/auth/services/w144-opportunity-lost-stage.service';
 import { supabaseAuthClientProvider } from 'src/engine/core-modules/auth/services/supabase-auth-client.provider';
 import { UpdateConnectedAccountOnReconnectService } from 'src/engine/core-modules/auth/services/update-connected-account-on-reconnect.service';
 import { SamlAuthStrategy } from 'src/engine/core-modules/auth/strategies/saml.auth.strategy';
@@ -66,6 +67,8 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 import { CoreEntityCacheModule } from 'src/engine/core-entity-cache/core-entity-cache.module';
 import { CalendarChannelEntity } from 'src/engine/metadata-modules/calendar-channel/entities/calendar-channel.entity';
 import { ConnectedAccountEntity } from 'src/engine/metadata-modules/connected-account/entities/connected-account.entity';
+import { FieldMetadataEntity } from 'src/engine/metadata-modules/field-metadata/field-metadata.entity';
+import { FieldMetadataModule } from 'src/engine/metadata-modules/field-metadata/field-metadata.module';
 import { MessageChannelEntity } from 'src/engine/metadata-modules/message-channel/entities/message-channel.entity';
 import { ObjectMetadataEntity } from 'src/engine/metadata-modules/object-metadata/object-metadata.entity';
 import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
@@ -101,6 +104,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
       UserWorkspaceEntity,
       TwoFactorAuthenticationMethodEntity,
       ObjectMetadataEntity,
+      FieldMetadataEntity,
       ConnectedAccountEntity,
       MessageChannelEntity,
       CalendarChannelEntity,
@@ -133,6 +137,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     WorkspaceModule,
     RoleModule,
     UserRoleModule,
+    FieldMetadataModule,
   ],
   controllers: [
     GoogleAuthController,
@@ -147,6 +152,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     JitWorkspaceProvisioningService,
     W144CrmRoleService,
     BtiApiKeyProvisioningService,
+    W144OpportunityLostStageService,
     supabaseAuthClientProvider,
     AuthService,
     JwtAuthStrategy,
