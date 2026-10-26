@@ -257,6 +257,74 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
   // once a minute per person (the answer only matters for aal1 sessions).
   private readonly factorCache = new Map<string, { has: boolean; at: number }>();
 
+  // A page load sends several requests at once. The first time a person
+  // reaches a workspace (their first visit, or the first visit after switching
+  // to another of their W144 companies, owner decision 159) each of those
+  // requests set up the workspace or added the person to it, and all but one
+  // failed on the unique keys, which left the page on the sign in screen.
+  // Now the first request does it and the others wait for it; one that still
+  // meets a row made meanwhile (on another server) reads the person again.
+  private readonly arriving = new Map<string, Promise<unknown>>();
+
+  private once<T>(key: string, run: () => Promise<T>): Promise<T> {
+    const running = this.arriving.get(key) as Promise<T> | undefined;
+
+    if (isDefined(running)) return running;
+
+    const started = run().finally(() => this.arriving.delete(key));
+
+    this.arriving.set(key, started);
+
+    return started;
+  }
+
+  private static isUniqueViolation(error: unknown): boolean {
+    const failure = error as {
+      code?: string;
+      driverError?: { code?: string };
+    } | null;
+
+    return failure?.code === '23505' || failure?.driverError?.code === '23505';
+  }
+
+  private async userDataOf(payload: SupabaseJwtPayload) {
+    const existingUser = await this.userRepository.findOne({
+      where: { email: payload.email },
+    });
+
+    return isDefined(existingUser)
+      ? { type: 'existingUser' as const, existingUser }
+      : {
+          type: 'newUserWithPicture' as const,
+          newUserWithPicture: this.buildPartialUser(payload),
+        };
+  }
+
+  // The person into a workspace that exists: once at a time per person and
+  // workspace, and read again after a row made by a request that won.
+  private joinWorkspace(
+    workspace: WorkspaceEntity,
+    payload: SupabaseJwtPayload,
+    roleId: string,
+  ): Promise<UserEntity> {
+    const join = async () =>
+      this.signInUpService.signInUpOnExistingWorkspace({
+        workspace,
+        userData: await this.userDataOf(payload),
+        roleId,
+      });
+
+    return this.once(`join:${workspace.id}:${payload.email}`, async () => {
+      try {
+        return await join();
+      } catch (error) {
+        if (!SupabaseJwtAuthStrategy.isUniqueViolation(error)) throw error;
+
+        return join();
+      }
+    });
+  }
+
   private async hasVerifiedFactor(userId: string): Promise<boolean> {
     const hit = this.factorCache.get(userId);
 
@@ -424,10 +492,12 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
           `validate: triggering JIT provisioning for company=${profile.company_id}`,
         );
 
-        const result = await this.jitService.provision({
-          companyId: profile.company_id,
-          userData,
-        });
+        // one set up per company at a time: the other requests of the
+        // page wait for it
+        const companyId = profile.company_id;
+        const result = await this.once(`jit:${companyId}`, () =>
+          this.jitService.provision({ companyId, userData }),
+        );
 
         user = result.user;
         workspace = result.workspace;
@@ -456,11 +526,7 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
           w144CrmRoleKind,
         });
 
-        user = await this.signInUpService.signInUpOnExistingWorkspace({
-          workspace,
-          userData,
-          roleId: crmRoleId,
-        });
+        user = await this.joinWorkspace(workspace, payload, crmRoleId);
 
         this.logger.debug(
           `validate: signInUpOnExistingWorkspace OK, userId=${user.id}`,
