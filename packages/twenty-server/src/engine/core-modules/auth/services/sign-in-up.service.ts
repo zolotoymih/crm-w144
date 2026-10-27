@@ -20,7 +20,6 @@ import {
   compareHash,
   hashPassword,
 } from 'src/engine/core-modules/auth/auth.util';
-import { MAX_WORKSPACES_WITHOUT_ENTERPRISE_KEY } from 'src/engine/core-modules/auth/constants/max-workspaces-without-enterprise-key.constants';
 import {
   type AuthProviderWithPasswordType,
   type ExistingUserOrPartialUserWithPicture,
@@ -426,7 +425,8 @@ export class SignInUpService {
       return;
     }
 
-    await this.assertWorkspaceCountWithinLimit(workspaceCount);
+    // W144: every company gets its own workspace, so their number is not
+    // capped (owner 2026-10-27, DECISIONS 164, variant A).
 
     if (
       !this.twentyConfigService.get(
@@ -449,26 +449,6 @@ export class SignInUpService {
       AuthExceptionCode.FORBIDDEN_EXCEPTION,
       {
         userFriendlyMessage: msg`Workspace creation is restricted to admins`,
-      },
-    );
-  }
-
-  private async assertWorkspaceCountWithinLimit(
-    workspaceCount: number,
-  ): Promise<void> {
-    if (this.enterprisePlanService.isValid()) {
-      return;
-    }
-
-    if (workspaceCount < MAX_WORKSPACES_WITHOUT_ENTERPRISE_KEY) {
-      return;
-    }
-
-    throw new AuthException(
-      `Cannot create more than ${MAX_WORKSPACES_WITHOUT_ENTERPRISE_KEY} workspaces without a valid enterprise key`,
-      AuthExceptionCode.FORBIDDEN_EXCEPTION,
-      {
-        userFriendlyMessage: msg`Workspace limit reached. A valid enterprise key is required to create more workspaces.`,
       },
     );
   }

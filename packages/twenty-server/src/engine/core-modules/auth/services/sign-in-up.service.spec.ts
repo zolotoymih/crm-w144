@@ -255,6 +255,27 @@ describe('SignInUpService workspace-creation policy', () => {
     });
   });
 
+  it('does not cap the number of workspaces (W144: one per company)', async () => {
+    const { service, mockWorkspaceRepository, mockConfigurationValues } =
+      createSignInUpServiceForTests();
+
+    mockConfigurationValues.IS_MULTIWORKSPACE_ENABLED = true;
+    mockConfigurationValues.IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS =
+      false;
+    mockWorkspaceRepository.count.mockResolvedValue(50);
+
+    await expect(
+      (service as any).assertWorkspaceCreationAllowed({
+        type: 'existingUser',
+        existingUser: {
+          id: 'existing-user-id',
+          email: 'existing.user@acme.dev',
+          canAccessFullAdminPanel: false,
+        },
+      }),
+    ).resolves.toBeUndefined();
+  });
+
   it('throws SIGNUP_DISABLED when creating workspace in single-workspace mode after bootstrap', async () => {
     const { service, mockWorkspaceRepository, mockConfigurationValues } =
       createSignInUpServiceForTests();
