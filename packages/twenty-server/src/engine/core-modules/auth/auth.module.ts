@@ -31,6 +31,7 @@ import { MicrosoftAPIsService } from 'src/engine/core-modules/auth/services/micr
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import { W144CrmRoleService } from 'src/engine/core-modules/auth/services/w144-crm-role.service';
+import { W144DealJournalService } from 'src/engine/core-modules/auth/services/w144-deal-journal.service';
 import { W144OpportunityLostStageService } from 'src/engine/core-modules/auth/services/w144-opportunity-lost-stage.service';
 import { supabaseAuthClientProvider } from 'src/engine/core-modules/auth/services/supabase-auth-client.provider';
 import { UpdateConnectedAccountOnReconnectService } from 'src/engine/core-modules/auth/services/update-connected-account-on-reconnect.service';
@@ -159,6 +160,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     W144CrmRoleService,
     BtiApiKeyProvisioningService,
     W144OpportunityLostStageService,
+    W144DealJournalService,
     supabaseAuthClientProvider,
     AuthService,
     JwtAuthStrategy,
