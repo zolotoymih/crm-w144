@@ -40,7 +40,7 @@ export class BtiApiKeyProvisioningService {
     const { data: conn, error: connError } =
       await this.supabaseAuthClient.client
         .from('hub_connections')
-        .select('workspace_id, subdomain, base_url')
+        .select('workspace_id')
         .eq('company_id', companyId)
         .eq('hub_type', 'crm')
         .eq('platform', 'twenty-hosted')
@@ -61,7 +61,7 @@ export class BtiApiKeyProvisioningService {
 
     if (!workspace) {
       throw new Error(
-        `No workspace found for company=${companyId} (workspace_id=${conn.workspace_id ?? 'null'}, base_url=${conn.base_url ?? 'null'})`,
+        `No workspace linked to company=${companyId} (workspace_id=${conn.workspace_id ?? 'null'})`,
       );
     }
 
@@ -131,43 +131,21 @@ export class BtiApiKeyProvisioningService {
     return { workspaceId: workspace.id };
   }
 
-  // workspace_id when set; otherwise fall back to the subdomain — either the
-  // stored one or the first host label of base_url (https://inter-inc.crm.…).
+  // Only the workspace linked to this company by its own set up. There used to
+  // be a fallback to the subdomain (the stored one or the first label of
+  // base_url), but a company's base_url can name another company's workspace
+  // (a row made before the company was renamed keeps the old address), and
+  // the fallback would then have handed one company a key to another's
+  // pipeline.
   private async resolveWorkspace(conn: {
     workspace_id: string | null;
-    subdomain: string | null;
-    base_url: string | null;
   }): Promise<WorkspaceEntity | null> {
-    if (conn.workspace_id) {
-      const byId = await this.workspaceRepository.findOne({
-        where: { id: conn.workspace_id },
-      });
-
-      if (byId) {
-        return byId;
-      }
-    }
-
-    let subdomain = conn.subdomain?.trim();
-
-    if (!subdomain && conn.base_url) {
-      try {
-        const host = new URL(conn.base_url).hostname;
-        const firstLabel = host.split('.')[0];
-
-        // 'crm' means the apex (crm.w144.com) — not a workspace subdomain.
-        if (firstLabel && firstLabel !== 'crm') {
-          subdomain = firstLabel;
-        }
-      } catch {
-        // ignore malformed base_url
-      }
-    }
-
-    if (!subdomain) {
+    if (!conn.workspace_id) {
       return null;
     }
 
-    return await this.workspaceRepository.findOne({ where: { subdomain } });
+    return await this.workspaceRepository.findOne({
+      where: { id: conn.workspace_id },
+    });
   }
 }
