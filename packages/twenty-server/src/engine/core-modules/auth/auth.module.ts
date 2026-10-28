@@ -16,6 +16,7 @@ import { MicrosoftAuthController } from 'src/engine/core-modules/auth/controller
 import { OAuthPropagatorController } from 'src/engine/core-modules/auth/controllers/oauth-propagator.controller';
 import { SSOAuthController } from 'src/engine/core-modules/auth/controllers/sso-auth.controller';
 import { W144MembersController } from 'src/engine/core-modules/auth/controllers/w144-members.controller';
+import { W144WorkspaceEraseController } from 'src/engine/core-modules/auth/controllers/w144-workspace-erase.controller';
 import { AuthSsoService } from 'src/engine/core-modules/auth/services/auth-sso.service';
 import { CreateCalendarChannelService } from 'src/engine/core-modules/auth/services/create-calendar-channel.service';
 import { CreateConnectedAccountService } from 'src/engine/core-modules/auth/services/create-connected-account.service';
@@ -150,6 +151,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     OAuthPropagatorController,
     SSOAuthController,
     W144MembersController,
+    W144WorkspaceEraseController,
   ],
   providers: [
     SignInUpService,
