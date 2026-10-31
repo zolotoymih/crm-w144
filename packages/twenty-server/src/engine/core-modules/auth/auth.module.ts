@@ -30,6 +30,7 @@ import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/se
 import { MicrosoftAPIsService } from 'src/engine/core-modules/auth/services/microsoft-apis.service';
 import { ResetPasswordService } from 'src/engine/core-modules/auth/services/reset-password.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
+import { W144AiOperationsService } from 'src/engine/core-modules/auth/services/w144-ai-operations.service';
 import { W144CrmRoleService } from 'src/engine/core-modules/auth/services/w144-crm-role.service';
 import { W144DealJournalService } from 'src/engine/core-modules/auth/services/w144-deal-journal.service';
 import { W144EngineKeyBackfillService } from 'src/engine/core-modules/auth/services/w144-engine-key-backfill.service';
@@ -162,6 +163,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
     BtiApiKeyProvisioningService,
     W144OpportunityLostStageService,
     W144DealJournalService,
+    W144AiOperationsService,
     W144EngineKeyBackfillService,
     supabaseAuthClientProvider,
     AuthService,
