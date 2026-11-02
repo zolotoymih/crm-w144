@@ -221,3 +221,25 @@ This handles everything: starts Postgres + Redis (auto-detects local services vs
 - `tsconfig.base.json` - Base TypeScript configuration
 - `package.json` - Root package with workspace definitions
 - `.cursor/rules/` - Detailed development guidelines and best practices
+
+## Collaboration (общий git, два разработчика)
+
+В репозитории работают двое: владелец и партнёр. Ветка выкладки этого репо: **`feature/supabase-sso-integration`**. **В неё никогда не пушить напрямую.**
+
+> Слияние в `feature/supabase-sso-integration` выкатывает прод автоматически, поэтому прямой push в неё означает релиз без review. Работа всегда идёт через свою ветку и PR.
+
+**Порядок работы:**
+1. Перед началом: `git fetch && git pull` (ветку мог обновить партнёр).
+2. Ветка от `feature/supabase-sso-integration`: `feat/<кратко>` или `fix/<кратко>`.
+3. Работа, коммит, push ветки: `git push -u origin <ветка>`.
+4. PR: `gh pr create --base feature/supabase-sso-integration`, в описании что, зачем и как проверено.
+5. Слияние решает владелец репозитория после review. Самому без явного «ок» не сливать.
+
+**Правила:**
+- Конфликты решать в своей ветке (rebase или merge от `feature/supabase-sso-integration`), не в ней самой.
+- Коммиты по Conventional Commits (`feat:`, `fix:`, `docs:` и так далее).
+- Секреты (`.env`, ключи, `api_key`, токены) не коммитить: перед push смотреть `git diff`. Репозиторий публичный: никаких адресов серверов, доменов и внутренних имён в коде, коммитах и PR.
+- Деструктивные операции (`push --force`, `reset --hard`, удаление удалённых веток) только после согласования с владельцем.
+- Перед PR прогнать сборку и типы (`nx`): красная сборка в `feature/supabase-sso-integration` кладёт прод.
+
+**Про этот репо (важно):** ветка по умолчанию `main`, но прод собирается из `feature/supabase-sso-integration`: работать и открывать PR от неё, не от `main`. Это форк Twenty (AGPL-3.0); свой код лежит в `packages/twenty-server/src/engine/core-modules/auth/` (вход через Supabase SSO). Образ для прода собирает GitHub Actions при push с изменениями в `packages/**`.
