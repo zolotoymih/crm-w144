@@ -36,6 +36,10 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 import { AiModelRegistryService } from 'src/engine/metadata-modules/ai/ai-models/services/ai-model-registry.service';
 import { RoleTargetEntity } from 'src/engine/metadata-modules/role-target/role-target.entity';
 import { type RolePermissionConfig } from 'src/engine/twenty-orm/types/role-permission-config';
+import {
+  W144TrialNoAiException,
+  w144AccessOfWorkspace,
+} from 'src/engine/core-modules/auth/utils/w144-access.util';
 
 // Agent execution within workflows uses database and action tools only.
 // Workflow tools are intentionally excluded to avoid circular dependencies
@@ -113,6 +117,12 @@ export class AgentAsyncExecutorService {
     authContext?: WorkspaceAuthContext;
   }): Promise<AgentExecutionResult> {
     try {
+      // an AI step of a workflow runs no model in the trial or a read only
+      // workspace of a W144 company (w144-access.util.ts)
+      if (agent && !(await w144AccessOfWorkspace(agent.workspaceId)).aiOpen) {
+        throw new W144TrialNoAiException();
+      }
+
       if (agent) {
         const workspace = await this.workspaceRepository.findOneBy({
           id: agent.workspaceId,

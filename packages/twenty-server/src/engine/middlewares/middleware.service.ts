@@ -15,6 +15,11 @@ import {
   workspaceOfAccessToken,
 } from 'src/engine/core-modules/auth/utils/w144-company-switched.util';
 import { W144HubClosedException } from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
+import {
+  assertW144RequestOpen,
+  W144ReadOnlyException,
+  W144TrialNoAiException,
+} from 'src/engine/core-modules/auth/utils/w144-access.util';
 import { ExceptionHandlerService } from 'src/engine/core-modules/exception-handler/exception-handler.service';
 import { ErrorCode } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
 import { JwtWrapperService } from 'src/engine/core-modules/jwt/services/jwt-wrapper.service';
@@ -84,7 +89,9 @@ export class MiddlewareService {
     // (W144CompanyGuard, w144HubClosed)
     if (
       error instanceof W144CompanySwitchedException ||
-      error instanceof W144HubClosedException
+      error instanceof W144HubClosedException ||
+      error instanceof W144ReadOnlyException ||
+      error instanceof W144TrialNoAiException
     ) {
       res.writeHead(error.status, { 'Content-Type': 'application/json' });
       res.write(
@@ -199,11 +206,17 @@ export class MiddlewareService {
           throw new W144CompanySwitchedException();
         }
 
+        // after the trial without a plan nothing is written, and the trial
+        // runs no AI operations (the W144 owner's rule, w144-access.util.ts)
+        await assertW144RequestOpen(request, context.workspace?.id);
+
         return context;
       } catch (error) {
         if (
           error instanceof W144CompanySwitchedException ||
-          error instanceof W144HubClosedException
+          error instanceof W144HubClosedException ||
+          error instanceof W144ReadOnlyException ||
+          error instanceof W144TrialNoAiException
         ) {
           throw error;
         }
