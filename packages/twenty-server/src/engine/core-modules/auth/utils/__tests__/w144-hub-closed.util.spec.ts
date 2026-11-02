@@ -1,6 +1,8 @@
 import {
+  crmClosedByPlan,
   isCrmClosedFor,
   W144HubClosedException,
+  W144NotInPlanException,
 } from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
 
 // The CRM closed for one person in their W144 company (owner's answer 5): the
@@ -35,5 +37,45 @@ describe('W144HubClosedException', () => {
 
     expect(error.status).toBe(403);
     expect(error.code).toBe('HUB_CLOSED');
+  });
+});
+
+// The CRM opens on Operate and up; Launch closes it for everyone, only with
+// the plan switch on.
+describe('crmClosedByPlan', () => {
+  it('closes it on Launch with the switch on', () => {
+    expect(crmClosedByPlan({ plan: 'launch', status: 'active' }, true)).toBe(
+      'launch',
+    );
+  });
+
+  it('keeps it open on Operate and Scale', () => {
+    expect(crmClosedByPlan({ plan: 'operate', status: 'active' }, true)).toBe(
+      null,
+    );
+    expect(crmClosedByPlan({ plan: 'scale', status: 'active' }, true)).toBe(
+      null,
+    );
+  });
+
+  it('keeps it open in the trial, which opens the Operate set', () => {
+    expect(crmClosedByPlan({ plan: 'launch', status: 'trialing' }, true)).toBe(
+      null,
+    );
+    expect(crmClosedByPlan(null, true)).toBe(null);
+  });
+
+  it('keeps it open with the switch off', () => {
+    expect(crmClosedByPlan({ plan: 'launch', status: 'active' }, false)).toBe(
+      null,
+    );
+  });
+
+  it('answers with the code the page turns into the locked screen', () => {
+    const error = new W144NotInPlanException('launch');
+
+    expect(error.status).toBe(403);
+    expect(error.code).toBe('NOT_IN_PLAN');
+    expect(error.message).toContain('Launch');
   });
 });

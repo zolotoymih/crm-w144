@@ -7,6 +7,9 @@ import { W144_APP_URL } from '@/w144/w144Products';
 // row in another product's panel leads to. Installed once, before the app
 // draws, so the very first refused request is heard.
 const CLOSED = 'HUB_CLOSED';
+// The company's plan does not open the CRM (Launch, PLAN_GATES_ON on): the
+// engine's locked screen for the CRM says which plan opens it.
+const NOT_IN_PLAN = 'NOT_IN_PLAN';
 
 type Watched = typeof window & { __w144HubClosedWatch?: boolean };
 
@@ -33,6 +36,12 @@ export const watchW144HubClosed = () => {
               j?.error === CLOSED
             ) {
               window.location.assign(`${W144_APP_URL}/no-access/crm`);
+            } else if (
+              j?.errors?.some((e) => e.extensions?.code === NOT_IN_PLAN) ===
+                true ||
+              j?.error === NOT_IN_PLAN
+            ) {
+              window.location.assign(`${W144_APP_URL}/billing/locked/crm`);
             }
           },
         )
