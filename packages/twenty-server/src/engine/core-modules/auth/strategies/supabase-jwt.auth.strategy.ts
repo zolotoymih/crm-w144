@@ -16,8 +16,10 @@ import { BtiApiKeyProvisioningService } from 'src/engine/core-modules/auth/servi
 import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import {
+  crmClosedByPlan,
   isCrmClosedFor,
   W144HubClosedException,
+  W144NotInPlanException,
 } from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
 import {
   toW144CrmRoleKind,
@@ -412,6 +414,21 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
 
       if (isCrmClosedFor(membership)) {
         throw new W144HubClosedException();
+      }
+
+      // The company's plan does not open the CRM (Launch): closed for
+      // everyone, the owner too. Read only with PLAN_GATES_ON.
+      if (process.env.PLAN_GATES_ON === 'true') {
+        const { data: billing } = await this.supabase
+          .from('company_billing')
+          .select('plan, status')
+          .eq('company_id', profile.company_id)
+          .maybeSingle();
+        const closingPlan = crmClosedByPlan(billing);
+
+        if (closingPlan !== null) {
+          throw new W144NotInPlanException(closingPlan);
+        }
       }
 
       const w144CrmRoleKind = toW144CrmRoleKind(profile.role);

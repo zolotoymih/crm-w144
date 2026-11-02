@@ -40,6 +40,10 @@ services:
       SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER:?SUPABASE_JWT_ISSUER is required for SSO}
       SUPABASE_JWKS_URI: ${SUPABASE_JWKS_URI:?SUPABASE_JWKS_URI is required for SSO}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:?SUPABASE_SERVICE_KEY is required for SSO}
+      # The W144 plan switches (w144-access.util.ts): read only and the trial's
+      # AI pause, set together with the engine and the other hubs; off unless set
+      PLAN_GATES_ON: ${PLAN_GATES_ON:-false}
+      PLAN_LIMIT_ON: ${PLAN_LIMIT_ON:-false}
       IS_MULTIWORKSPACE_ENABLED: ${IS_MULTIWORKSPACE_ENABLED:-true}
       IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS: ${IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS:-true}
       SIGN_IN_PREFILLED: "false"
@@ -103,6 +107,8 @@ services:
       SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER}
       SUPABASE_JWKS_URI: ${SUPABASE_JWKS_URI}
       SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      PLAN_GATES_ON: ${PLAN_GATES_ON:-false}
+      PLAN_LIMIT_ON: ${PLAN_LIMIT_ON:-false}
       DISABLE_DB_MIGRATIONS: "true"
       DISABLE_CRON_JOBS_REGISTRATION: "true"
       STORAGE_TYPE: local

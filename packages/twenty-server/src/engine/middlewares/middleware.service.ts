@@ -14,7 +14,10 @@ import {
   W144CompanySwitchedException,
   workspaceOfAccessToken,
 } from 'src/engine/core-modules/auth/utils/w144-company-switched.util';
-import { W144HubClosedException } from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
+import {
+  W144HubClosedException,
+  W144NotInPlanException,
+} from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
 import {
   assertW144RequestOpen,
   W144ReadOnlyException,
@@ -90,6 +93,7 @@ export class MiddlewareService {
     if (
       error instanceof W144CompanySwitchedException ||
       error instanceof W144HubClosedException ||
+      error instanceof W144NotInPlanException ||
       error instanceof W144ReadOnlyException ||
       error instanceof W144TrialNoAiException
     ) {
@@ -215,6 +219,7 @@ export class MiddlewareService {
         if (
           error instanceof W144CompanySwitchedException ||
           error instanceof W144HubClosedException ||
+          error instanceof W144NotInPlanException ||
           error instanceof W144ReadOnlyException ||
           error instanceof W144TrialNoAiException
         ) {
