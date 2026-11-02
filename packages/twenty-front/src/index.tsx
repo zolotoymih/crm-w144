@@ -8,6 +8,9 @@ import 'twenty-ui/theme-dark.css';
 import './index.css';
 import '@/w144/W144GlobalTheme.css';
 import '@/w144/W144Shell.css';
+import { watchW144HubClosed } from '@/w144/w144HubClosed';
+
+watchW144HubClosed();
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') ?? document.body,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { W144Chevron, W144Icon } from '@/w144/W144Icons';
+import { W144Chevron, W144Icon, W144Lock } from '@/w144/W144Icons';
 import { W144_APP_URL, type W144Product } from '@/w144/w144Products';
 
 // What the engine tells the CRM's W144 shell, asked from the browser with the
@@ -14,7 +14,12 @@ export const W144_ENGINE_URL =
     ? 'http://localhost:3001'
     : W144_APP_URL;
 
-type W144ProductState = { code: string; connected: boolean; critical: boolean };
+type W144ProductState = {
+  code: string;
+  connected: boolean;
+  critical: boolean;
+  closed?: boolean;
+};
 
 // One request however many rows ask; the last answer is kept for the tab.
 let asked: Promise<W144ProductState[] | null> | null = null;
@@ -65,22 +70,29 @@ const W144Dot = () => (
   <i className="w144-pdot" aria-label="a critical tension" />
 );
 
-// A folded product row with its marks (spec 01-platform, shell items 6 and
-// 7): nothing connected mutes it to 40 percent with no dot and its click goes
+// A folded product row with its marks (spec 01-platform, shell items 6 to
+// 8): nothing connected mutes it to 40 percent with no dot and its click goes
 // to the engine's source screen; a critical tension in it adds a 6 px dot
-// beside the chevron. The hover names the product, its domain and its state.
+// beside the chevron; a product closed for the person mutes it with a small
+// lock and its click goes to W144's No access screen. The hover names the
+// product, its domain and its state.
 export const W144ProductRow = ({ product }: { product: W144Product }) => {
   const state = useW144ProductState(product.code);
-  const off = state !== null && !state.connected;
+  const closed = state?.closed === true;
+  const off = closed || (state !== null && !state.connected);
   const host = product.href.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  const href = closed
+    ? `${W144_APP_URL}/no-access/${product.code}`
+    : off
+      ? `${W144_APP_URL}/sources/${product.code}`
+      : product.href;
+  const word = closed ? 'closed for you' : off ? 'not connected' : 'connected';
   return (
     <a
       className={`w144-row${off ? ' is-off' : ''}`}
-      href={off ? `${W144_APP_URL}/sources/${product.code}` : product.href}
+      href={href}
       title={
-        state
-          ? `${product.name}, ${host}, ${off ? 'not connected' : 'connected'}`
-          : `${product.name}, ${host}`
+        state ? `${product.name}, ${host}, ${word}` : `${product.name}, ${host}`
       }
     >
       <span>
@@ -88,7 +100,11 @@ export const W144ProductRow = ({ product }: { product: W144Product }) => {
         {product.name}
       </span>
       <span className="w144-marks">
-        {state?.critical === true && !off && <W144Dot />}
+        {closed ? (
+          <W144Lock />
+        ) : (
+          state?.critical === true && !off && <W144Dot />
+        )}
         <W144Chevron />
       </span>
     </a>

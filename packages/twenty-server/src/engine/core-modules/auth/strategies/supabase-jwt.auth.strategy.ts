@@ -16,6 +16,10 @@ import { BtiApiKeyProvisioningService } from 'src/engine/core-modules/auth/servi
 import { JitWorkspaceProvisioningService } from 'src/engine/core-modules/auth/services/jit-workspace-provisioning.service';
 import { SignInUpService } from 'src/engine/core-modules/auth/services/sign-in-up.service';
 import {
+  isCrmClosedFor,
+  W144HubClosedException,
+} from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
+import {
   toW144CrmRoleKind,
   W144CrmRoleService,
 } from 'src/engine/core-modules/auth/services/w144-crm-role.service';
@@ -389,6 +393,25 @@ export class SupabaseJwtAuthStrategy extends PassportStrategy(
       // refused here too; the CRM used to keep letting them in.
       if (profile.is_active === false) {
         throw new UnauthorizedException('Access to this company was taken away');
+      }
+
+      // The owner or an administrator can close the CRM for one person in
+      // W144 (Settings, Team); the membership of this company holds it.
+      const { data: membership, error: membershipError } = await this.supabase
+        .from('company_members')
+        .select('role, closed_hubs')
+        .eq('user_id', payload.sub)
+        .eq('company_id', profile.company_id)
+        .maybeSingle();
+
+      if (membershipError) {
+        throw new UnauthorizedException(
+          `Failed to load W144 membership: ${membershipError.message}`,
+        );
+      }
+
+      if (isCrmClosedFor(membership)) {
+        throw new W144HubClosedException();
       }
 
       const w144CrmRoleKind = toW144CrmRoleKind(profile.role);

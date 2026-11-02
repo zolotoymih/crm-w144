@@ -382,6 +382,10 @@ html.dark .w144-layout {
   border-radius: 50%;
   background: #e85050;
 }
+.w144-plock {
+  display: block;
+  flex: none;
+}
 
 /* light theme: the same shell in the light tokens (text #1A1A1A, black rims,
    the one light gold #F2AD0A along the work area's edge) */

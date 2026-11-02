@@ -53,3 +53,19 @@ export const W144Chevron = () => {
     </svg>
   );
 };
+
+// The small lock on a product row closed for the person (spec 01-platform,
+// shell item 8), Carbon «locked» as the other shell icons.
+export const W144Lock = () => (
+  <svg
+    className="w144-plock"
+    width={11}
+    height={11}
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    role="img"
+    aria-label="closed for you"
+  >
+    <path d="M24 14h-2v-6a6 6 0 0 0-12 0v6h-2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-12a2 2 0 0 0-2-2z m-12-6a4 4 0 0 1 8 0v6h-8z m12 20h-16v-12h16z" />
+  </svg>
+);

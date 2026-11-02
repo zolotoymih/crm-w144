@@ -14,6 +14,7 @@ import {
   W144CompanySwitchedException,
   workspaceOfAccessToken,
 } from 'src/engine/core-modules/auth/utils/w144-company-switched.util';
+import { W144HubClosedException } from 'src/engine/core-modules/auth/utils/w144-hub-closed.util';
 import { ExceptionHandlerService } from 'src/engine/core-modules/exception-handler/exception-handler.service';
 import { ErrorCode } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
 import { JwtWrapperService } from 'src/engine/core-modules/jwt/services/jwt-wrapper.service';
@@ -78,9 +79,13 @@ export class MiddlewareService {
 
   // oxlint-disable-next-line @typescripttypescript/no-explicit-any
   public writeGraphqlResponseOnExceptionCaught(res: Response, error: any) {
-    // a window left on another company: refused with its own status, which
-    // the W144 shell in the page answers (W144CompanyGuard)
-    if (error instanceof W144CompanySwitchedException) {
+    // a window left on another company, or the CRM closed for the person:
+    // refused with its own status, which the W144 shell in the page answers
+    // (W144CompanyGuard, w144HubClosed)
+    if (
+      error instanceof W144CompanySwitchedException ||
+      error instanceof W144HubClosedException
+    ) {
       res.writeHead(error.status, { 'Content-Type': 'application/json' });
       res.write(
         JSON.stringify({
@@ -196,7 +201,12 @@ export class MiddlewareService {
 
         return context;
       } catch (error) {
-        if (error instanceof W144CompanySwitchedException) throw error;
+        if (
+          error instanceof W144CompanySwitchedException ||
+          error instanceof W144HubClosedException
+        ) {
+          throw error;
+        }
 
         const err = error as Error;
 
