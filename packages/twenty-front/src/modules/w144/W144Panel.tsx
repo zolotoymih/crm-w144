@@ -4,6 +4,7 @@ import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMembe
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import {
   W144_ENGINE_URL,
+  W144PlanBand,
   W144ProductMarks,
   W144ProductRow,
 } from '@/w144/W144EngineState';
@@ -98,6 +99,7 @@ export const W144PanelBottom = () => {
 
   return (
     <div className="w144-panel-bottom">
+      <W144PlanBand />
       <div className="w144-divider" />
       <div className="w144-gap-14" />
       <a className="w144-row is-framed" href={`${W144_APP_URL}/notifications`}>

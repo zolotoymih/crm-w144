@@ -196,3 +196,54 @@ export const W144TensionStrip = () => {
     </div>
   );
 };
+
+type W144Band = {
+  state: 'trial' | 'off';
+  days: number;
+  trial_ends_at: string | null;
+} | null;
+
+// The trial and read only band at the foot of the panel, the same as in the
+// other W144 products, from the engine's answer (GET /api/shell/plan): calm
+// while the trial runs, gold in its last three days, red on its last day and
+// once the workspace is read only. Nothing while the engine's PLAN_GATES_ON
+// is off, or while the engine does not answer.
+export const W144PlanBand = () => {
+  const [band, setBand] = useState<W144Band>(null);
+  useEffect(() => {
+    let live = true;
+    fetch(`${W144_ENGINE_URL}/api/shell/plan`, { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { data?: { band?: W144Band } } | null) => {
+        if (live) setBand(j?.data?.band ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (band === null) return null;
+  if (band.state === 'off') {
+    return (
+      <a
+        className="w144-planband is-red"
+        href={`${W144_APP_URL}/billing/trial`}
+      >
+        Payment is not set up: the workspace is read only.
+        <b>Choose a plan</b>
+      </a>
+    );
+  }
+  const tone = band.days <= 1 ? ' is-red' : band.days <= 3 ? ' is-gold' : '';
+  return (
+    <a
+      className={`w144-planband${tone}`}
+      href={`${W144_APP_URL}/billing/plans`}
+    >
+      {band.days <= 1
+        ? 'The trial ends today.'
+        : `Trial, ${band.days} days left.`}
+      <b>Choose a plan</b>
+    </a>
+  );
+};
