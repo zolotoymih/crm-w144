@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { W144Chevron, W144Icon, W144Lock } from '@/w144/W144Icons';
+import { type W144PlanRights } from '@/w144/W144PlanState';
+import { w144ProductRowView } from '@/w144/w144ProductRow';
 import { W144_APP_URL, type W144Product } from '@/w144/w144Products';
 
 // What the engine tells the CRM's W144 shell, asked from the browser with the
@@ -14,7 +16,7 @@ export const W144_ENGINE_URL =
     ? 'http://localhost:3001'
     : W144_APP_URL;
 
-type W144ProductState = {
+export type W144ProductState = {
   code: string;
   connected: boolean;
   critical: boolean;
@@ -71,28 +73,41 @@ const W144Dot = () => (
 );
 
 // A folded product row with its marks (spec 01-platform, shell items 6 to
-// 8): nothing connected mutes it to 40 percent with no dot and its click goes
+// 9): nothing connected mutes it to 40 percent with no dot and its click goes
 // to the engine's source screen; a critical tension in it adds a 6 px dot
 // beside the chevron; a product closed for the person mutes it with a small
-// lock and its click goes to W144's No access screen. The hover names the
-// product, its domain and its state.
-export const W144ProductRow = ({ product }: { product: W144Product }) => {
-  const state = useW144ProductState(product.code);
-  const closed = state?.closed === true;
-  const off = closed || (state !== null && !state.connected);
+// lock and its click goes to W144's No access screen; a product the
+// company's plan does not open (the engine's rights, GET /api/shell/plan,
+// asked once for the panel by W144OtherProducts) mutes it with the gold
+// diamond and its click goes to the engine's locked screen for it
+// (11-billing, «Три состояния знака на рельсе»). The plan comes before the
+// role and before the source (w144ProductRow.ts). Only while the engine's
+// PLAN_GATES_ON is on; until the engine answers, or when it does not, the row
+// keeps its other marks. The hover names the product, its domain and its
+// state.
+export const W144ProductRow = ({
+  product,
+  rights,
+}: {
+  product: W144Product;
+  rights: W144PlanRights | null | 'unknown';
+}) => {
+  const v = w144ProductRowView(
+    product.code,
+    product.href,
+    W144_APP_URL,
+    useW144ProductState(product.code),
+    rights,
+  );
   const host = product.href.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-  const href = closed
-    ? `${W144_APP_URL}/no-access/${product.code}`
-    : off
-      ? `${W144_APP_URL}/sources/${product.code}`
-      : product.href;
-  const word = closed ? 'closed for you' : off ? 'not connected' : 'connected';
   return (
     <a
-      className={`w144-row${off ? ' is-off' : ''}`}
-      href={href}
+      className={`w144-row${v.cls}`}
+      href={v.to}
       title={
-        state ? `${product.name}, ${host}, ${word}` : `${product.name}, ${host}`
+        v.word !== null
+          ? `${product.name}, ${host}, ${v.word}`
+          : `${product.name}, ${host}`
       }
     >
       <span>
@@ -100,10 +115,16 @@ export const W144ProductRow = ({ product }: { product: W144Product }) => {
         {product.name}
       </span>
       <span className="w144-marks">
-        {closed ? (
+        {v.mark === 'diamond' ? (
+          <i
+            className="w144-diamond"
+            role="img"
+            aria-label={v.word ?? undefined}
+          />
+        ) : v.mark === 'lock' ? (
           <W144Lock />
         ) : (
-          state?.critical === true && !off && <W144Dot />
+          v.mark === 'dot' && <W144Dot />
         )}
         <W144Chevron />
       </span>

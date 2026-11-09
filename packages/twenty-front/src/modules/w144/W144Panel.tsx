@@ -9,6 +9,7 @@ import {
   W144ProductRow,
 } from '@/w144/W144EngineState';
 import { W144Icon } from '@/w144/W144Icons';
+import { useW144Plan } from '@/w144/W144PlanState';
 import { W144ProfileMenu } from '@/w144/W144ProfileMenu';
 import { useW144Me } from '@/w144/w144Me';
 import { W144_APP_URL, W144_PRODUCTS } from '@/w144/w144Products';
@@ -48,16 +49,24 @@ export const W144CrmGroup = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-/** The products after CRM, each leading to its own domain, with its marks. */
-export const W144OtherProducts = () => (
-  <div className="w144-products">
-    {W144_PRODUCTS.filter((product) => product.code !== 'crm').map(
-      (product) => (
-        <W144ProductRow key={product.code} product={product} />
-      ),
-    )}
-  </div>
-);
+/** The products after CRM, each leading to its own domain, with its marks;
+ *  what the company's plan opens is asked once here for all the rows. */
+export const W144OtherProducts = () => {
+  const rights = useW144Plan();
+  return (
+    <div className="w144-products">
+      {W144_PRODUCTS.filter((product) => product.code !== 'crm').map(
+        (product) => (
+          <W144ProductRow
+            key={product.code}
+            product={product}
+            rights={rights}
+          />
+        ),
+      )}
+    </div>
+  );
+};
 
 // The engine's unread notifications for the count on the Notifications row.
 // The engine answers across origins with the shared sign-in cookie; while
