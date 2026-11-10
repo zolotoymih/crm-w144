@@ -530,6 +530,21 @@ html.light .w144-work::before {
   .w144-navbtn i { transition: none; }
 }
 
+/* Phone and iPad, second pass (owner 2026-11-10: buttons of different sizes,
+   text so dense it runs together). The tensions strip's way in keeps one
+   line: at 1024 a long «not counted» reason broke «Try again» in two. The
+   reason itself, when it wraps on a phone or an iPad, takes the 1.45 leading
+   of the text around it instead of the browser's 1.2. */
+.w144-tstrip-open {
+  flex: none;
+  white-space: nowrap;
+}
+@media (max-width: 1239px) {
+  .w144-tstrip-why {
+    line-height: 1.45;
+  }
+}
+
 /* a window left on a company the person no longer works in (W144CompanyGuard),
    the same band as the engine's and the other hubs' */
 .w144-moved {
