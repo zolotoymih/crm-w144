@@ -545,6 +545,19 @@ html.light .w144-work::before {
   }
 }
 
+/* ── A finger and Safari, the whole CRM (owner 2026-11-10: «по всему
+   интерфейсу софта пройтись») ──
+   Faults of touch live under (hover: none): a desktop mouse sees nothing new,
+   an iPad Pro with a finger gets them at its desktop width too. */
+
+/* Key hints: a touch screen has no keys. Twenty's side menu brings an
+   item's key hint out under a mouse, so a tap showed it; on a touch screen
+   it stays hidden. The command menu's hints and «⌘K» on its button go in
+   their components (useW144NoHover.ts). */
+@media (hover: none) {
+  .navigation-drawer-item .keyboard-shortcuts { display: none; }
+}
+
 /* a window left on a company the person no longer works in (W144CompanyGuard),
    the same band as the engine's and the other hubs' */
 .w144-moved {

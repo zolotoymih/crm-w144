@@ -13,6 +13,7 @@ import { AppTooltip, TooltipDelay, TooltipPosition } from 'twenty-ui/display';
 import { AnimatedButton } from 'twenty-ui/input';
 import { getOsControlSymbol, useIsMobile } from 'twenty-ui/utilities';
 import { ThemeContext, themeCssVariables } from 'twenty-ui/theme-constants';
+import { useW144NoHover } from '@/w144/useW144NoHover';
 
 const StyledButtonWrapper = styled.div<{ alignToTop: boolean }>`
   align-items: ${({ alignToTop }) => (alignToTop ? 'center' : 'initial')};
@@ -128,6 +129,9 @@ export const SidePanelToggleButton = () => {
   );
 
   const isMobile = useIsMobile();
+  // W144: on a touch screen no «⌘K» (no keys to press) and no tooltip: a tap
+  // left it standing over the command menu's search until the next tap
+  const isTouchScreen = useW144NoHover();
 
   const alignWithSidePanelTopBar =
     isMobile && isLayoutCustomizationModeEnabled && isSidePanelOpened;
@@ -147,7 +151,7 @@ export const SidePanelToggleButton = () => {
           size={isMobile ? 'medium' : 'small'}
           variant="secondary"
           accent="default"
-          hotkeys={[getOsControlSymbol(), 'K']}
+          hotkeys={isTouchScreen ? undefined : [getOsControlSymbol(), 'K']}
           ariaLabel={ariaLabel}
           onClick={toggleSidePanelMenu}
           animate={{
@@ -168,6 +172,7 @@ export const SidePanelToggleButton = () => {
           place={TooltipPosition.Bottom}
           offset={5}
           noArrow
+          hidden={isTouchScreen}
         />
       </StyledTooltipWrapper>
     </StyledButtonWrapper>

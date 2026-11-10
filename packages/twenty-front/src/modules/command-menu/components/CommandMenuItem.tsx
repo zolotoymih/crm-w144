@@ -6,6 +6,7 @@ import { MenuItem } from 'twenty-ui/navigation';
 import { useCommandMenuOnItemClick } from '@/command-menu/hooks/useCommandMenuOnItemClick';
 import { isSelectedItemIdComponentFamilyState } from '@/ui/layout/selectable-list/states/isSelectedItemIdComponentFamilyState';
 import { useAtomComponentFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomComponentFamilyStateValue';
+import { useW144NoHover } from '@/w144/useW144NoHover';
 import { type Nullable } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -51,6 +52,9 @@ export const CommandMenuItem = ({
     id,
   );
 
+  // W144: no key hints on a touch screen, it has no keys to press
+  const isTouchScreen = useW144NoHover();
+
   return (
     <MenuItem
       withIconContainer={!isDefined(LeftComponent)}
@@ -59,7 +63,7 @@ export const CommandMenuItem = ({
       text={label}
       contextualText={description}
       contextualTextPosition={contextualTextPosition}
-      hotKeys={hotKeys}
+      hotKeys={isTouchScreen ? undefined : hotKeys}
       onClick={
         onClick || to
           ? () =>
