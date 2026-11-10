@@ -558,6 +558,19 @@ html.light .w144-work::before {
   .navigation-drawer-item .keyboard-shortcuts { display: none; }
 }
 
+/* Tap size: a finger is about 44px wide. */
+@media (hover: none) {
+  /* text links and text buttons keep their look and place; their hit area
+     grows 10px above and below (padding taken back by the margin) */
+  .w144-tstrip-open,
+  .w144-wordmark { padding-block: 10px; margin-block: -10px; }
+  /* the search field fills its pill, so a tap anywhere on it types */
+  .w144-search { padding-top: 0; padding-bottom: 0; min-height: 36px; }
+  .w144-search-input { align-self: stretch; }
+  /* the command menu's search on a phone: 36 of its 52 bar, not 24 */
+  [data-testid='command-menu'] input { min-height: 36px; }
+}
+
 /* a window left on a company the person no longer works in (W144CompanyGuard),
    the same band as the engine's and the other hubs' */
 .w144-moved {

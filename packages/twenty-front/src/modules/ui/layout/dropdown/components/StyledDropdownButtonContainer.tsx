@@ -37,4 +37,16 @@ export const StyledDropdownButtonContainer = styled.div<StyledDropdownButtonProp
           ? themeCssVariables.background.transparent.medium
           : themeCssVariables.background.transparent.light};
   }
+
+  /* W144: a finger needs 32px, the button keeps its 24px look; its hit
+     area grows 4px above and below on a touch screen */
+  @media (hover: none) {
+    position: relative;
+
+    &::after {
+      content: '';
+      inset: -4px 0;
+      position: absolute;
+    }
+  }
 `;
