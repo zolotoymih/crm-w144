@@ -13,6 +13,7 @@ import { isNonEmptyString } from '@sniptt/guards';
 import { type ReactNode, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { isDefined } from 'twenty-shared/utils';
+import { useW144NoHover } from '@/w144/useW144NoHover';
 import { Pill } from 'twenty-ui/components';
 import {
   AppTooltip,
@@ -270,6 +271,8 @@ export const NavigationDrawerItem = ({
 }: NavigationDrawerItemProps) => {
   const { theme } = useContext(ThemeContext);
   const isMobile = useIsMobile();
+  // W144: a touch screen has no hover to bring the item's options out
+  const isTouchScreen = useW144NoHover();
   const isSettingsPage = useIsSettingsPage();
   const [isNavigationDrawerExpanded, setIsNavigationDrawerExpanded] =
     useAtomState(isNavigationDrawerExpandedState);
@@ -431,6 +434,7 @@ export const NavigationDrawerItem = ({
                 <StyledRightOptionsVisbility
                   data-visible={
                     isMobile ||
+                    isTouchScreen ||
                     isRightOptionsDropdownOpen ||
                     alwaysShowRightOptions
                       ? 'true'

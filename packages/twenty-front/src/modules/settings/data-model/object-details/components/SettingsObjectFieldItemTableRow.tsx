@@ -38,8 +38,10 @@ type SettingsObjectFieldItemTableRowProps = {
   mode: 'view' | 'new-field';
 };
 
+// W144: on a phone the two 148px columns took the whole row and the name
+// got 0px; the name keeps 120px and they give way (a computer keeps 180)
 export const OBJECT_FIELD_TABLE_ROW_GRID_TEMPLATE_COLUMNS =
-  'minmax(0, 1fr) 148px 148px 36px';
+  'minmax(120px, 1fr) minmax(0, 148px) minmax(0, 148px) 36px';
 
 const StyledNameContainer = styled.div`
   align-items: center;

@@ -54,7 +54,12 @@
         }
       };
 
-      const isIOS = /iPad|iPhone/.test(navigator.userAgent);
+      // W144: an iPad's Safari says «Macintosh» like a Mac, so the zoom
+      // into a small field was stopped on an iPhone only; its touch points
+      // tell an iPad apart
+      const isIOS =
+        /iPad|iPhone/.test(navigator.userAgent) ||
+        (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
       if (isIOS) {
         disableInputAutoZoom();
       }

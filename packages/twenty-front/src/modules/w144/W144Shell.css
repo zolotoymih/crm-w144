@@ -486,7 +486,9 @@ html.light .w144-work::before {
 /* ── The shell on a phone and an iPad (owner 2026-10-21) ──
    As in the other hubs' shell.css. Under 900 the panel leaves the row: it
    waits off the left edge and the menu button (W144NavButton) slides it in
-   over the work area on a dark glass, a scrim behind it. The work area takes
+   over the work area, a scrim behind it; the panel is a clear glass, the page
+   showing through it strongly blurred under a tint of the floor's navy, so it
+   reads as one piece with the top bar (owner 2026-11-10). The work area takes
    the full width, without its gold corner rim. Twenty's mobile bottom bar is
    gone (DefaultLayout), the panel is the one navigation on every size. */
 .w144-navbtn,
@@ -506,7 +508,7 @@ html.light .w144-work::before {
   .w144-search { width: auto; flex: 1 1 auto; max-width: 290px; min-width: 0; margin-left: 10px; }
   /* the drawer: Twenty's drawer box inside takes its width, at the padding
      it has on a computer (Twenty pads it 20 a side on a phone) */
-  .w144-layout .w144-navwrap { position: fixed; top: 56px; bottom: 0; left: 0; z-index: 30; width: min(300px, 86vw); background: linear-gradient(180deg, rgb(14, 20, 34), rgb(7, 11, 20)); box-shadow: inset -1px 0 0 hsla(0, 0%, 100%, 0.08), 24px 0 60px -20px rgba(0, 0, 0, 0.7); transform: translateX(-104%); visibility: hidden; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.32s; }
+  .w144-layout .w144-navwrap { position: fixed; top: 56px; bottom: 0; left: 0; z-index: 30; width: min(300px, 86vw); background: rgba(4, 11, 34, 0.18); -webkit-backdrop-filter: blur(40px) saturate(1.4); backdrop-filter: blur(40px) saturate(1.4); box-shadow: inset -1px 0 0 hsla(0, 0%, 100%, 0.08), 24px 0 60px -20px rgba(0, 0, 0, 0.7); transform: translateX(-104%); visibility: hidden; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.32s; }
   .w144-layout.is-nav-open .w144-navwrap { transform: none; visibility: visible; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1); }
   .w144-navwrap > div { width: 100%; }
   .w144-navwrap > div > div { width: 100%; padding: 12px 0 16px 8px; }
@@ -528,6 +530,126 @@ html.light .w144-work::before {
   .w144-layout .w144-navwrap,
   .w144-navscrim,
   .w144-navbtn i { transition: none; }
+}
+/* A finger leaves :hover on the row it touched, and Safari keeps it until the
+   next tap; the panel stays mounted from page to page, so a row the finger
+   passed kept its hover look beside the current one. With a finger the rows
+   show only their resting and current look (Twenty's items mark the current
+   one with aria-selected). */
+@media (hover: none) {
+  .w144-row:hover { color: rgba(240, 237, 230, 0.65); background: none; }
+  .w144-row.is-framed:hover { color: rgba(240, 237, 230, 0.92); background: rgba(255, 255, 255, 0.01); }
+  .navigation-drawer-item:not([aria-selected='true']):hover { background: transparent; }
+  html.light .w144-row:hover { color: rgba(26, 26, 26, 0.65); background: none; }
+  html.light .w144-row.is-framed:hover { color: rgba(26, 26, 26, 0.9); background: rgba(255, 255, 255, 0.12); }
+}
+/* The search on a phone (owner 2026-11-10): one round icon, 36 like every
+   framed control in the bar, as the engine has it. A tap opens the field across the bar, the wordmark steps aside and the
+   keyboard comes up; Enter searches every product, a tap elsewhere folds it
+   back. While folded the field lies over the icon, so the tap lands on the
+   field itself and Safari brings the keyboard up without a script. */
+@media (max-width: 639px) {
+  .w144-topbar { position: relative; }
+  .w144-wordmark { transition: opacity 0.2s ease; }
+  .w144-topbar .w144-search { position: relative; box-sizing: border-box; flex: none; width: 36px; max-width: none; height: 36px; min-height: 36px; margin-left: 0; padding: 0; justify-content: center; transition: width 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .w144-search .w144-search-icon { font-size: 16px; }
+  .w144-search .w144-search-input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+  .w144-topbar .w144-search:focus-within { position: absolute; top: 10px; right: 16px; width: calc(100% - 72px); padding: 0 16px; justify-content: flex-start; }
+  .w144-search:focus-within .w144-search-input { position: static; opacity: 1; cursor: text; }
+  .w144-topbar:has(.w144-search:focus-within) .w144-wordmark { opacity: 0; pointer-events: none; }
+}
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) { .w144-wordmark, .w144-topbar .w144-search { transition: none; } }
+
+/* Phone and iPad, second pass (owner 2026-11-10: buttons of different sizes,
+   text so dense it runs together). The tensions strip's way in keeps one
+   line: at 1024 a long «not counted» reason broke «Try again» in two. The
+   reason itself, when it wraps on a phone or an iPad, takes the 1.45 leading
+   of the text around it instead of the browser's 1.2. */
+.w144-tstrip-open {
+  flex: none;
+  white-space: nowrap;
+}
+@media (max-width: 1239px) {
+  .w144-tstrip-why {
+    line-height: 1.45;
+  }
+}
+
+/* ── A finger and Safari, the whole CRM (owner 2026-11-10: «по всему
+   интерфейсу софта пройтись») ──
+   Faults of touch live under (hover: none): a desktop mouse sees nothing new,
+   an iPad Pro with a finger gets them at its desktop width too. */
+
+/* Key hints: a touch screen has no keys. Twenty's side menu brings an
+   item's key hint out under a mouse, so a tap showed it; on a touch screen
+   it stays hidden. The command menu's hints and «⌘K» on its button go in
+   their components (useW144NoHover.ts). */
+@media (hover: none) {
+  .navigation-drawer-item .keyboard-shortcuts { display: none; }
+}
+
+/* Tap size: a finger is about 44px wide. */
+@media (hover: none) {
+  /* text links and text buttons keep their look and place; their hit area
+     grows 10px above and below (padding taken back by the margin) */
+  .w144-tstrip-open,
+  .w144-wordmark { padding-block: 10px; margin-block: -10px; }
+  /* the search field fills its pill, so a tap anywhere on it types */
+  .w144-search { padding-top: 0; padding-bottom: 0; min-height: 36px; }
+  .w144-search-input { align-self: stretch; }
+  /* the command menu's search on a phone: 36 of its 52 bar, not 24 */
+  [data-testid='command-menu'] input { min-height: 36px; }
+  /* Twenty's side menu items (Companies, People, the settings list) in the
+     CRM group: 32 tall, not 28 */
+  .navigation-drawer-item { min-height: 32px; }
+}
+
+/* What Twenty shows only under a mouse stays shown on a touch screen, as
+   Twenty itself does on a phone for some of them: a relation's add and
+   options on a record's page, a card's checkbox and its expand mark on a
+   board, a menu item's edit and options, a side menu section's add and
+   chevron. */
+@media (hover: none) {
+  .displayOnHover { opacity: 1 !important; pointer-events: auto !important; }
+  .checkbox-container,
+  .compact-icon-container,
+  .hoverable-buttons { opacity: 1 !important; }
+  .section-title-container > div,
+  .section-title-container > div > div { opacity: 1; }
+}
+
+/* The strip under 900 is 52 tall for one line as on a computer: its padding
+   was added to its 52 (73 on a phone, a fifth of a phone on its side). */
+@media (max-width: 899px) {
+  .w144-tstrip { box-sizing: border-box; }
+}
+/* The drawer on a phone scrolls as one, the CRM group keeps the height of
+   its list. The group shrank instead: on an iPhone SE the CRM's own list
+   (Companies, People, Opportunities) had 0 of its 518, on a phone on its
+   side Notifications and the profile ran off the bottom. */
+@media (max-width: 899px) {
+  .w144-navwrap .w144-panel { overflow-y: auto; }
+  .w144-navwrap .w144-group { flex: none; }
+}
+/* A phone on its side is 343 tall: the top bar, the strip and Twenty's page
+   header and view bar left a board 110 of it. The strip keeps one line of
+   36 there, its reason cut with an ellipsis rather than wrapped. */
+@media (max-height: 500px) {
+  .w144-tstrip { flex-wrap: nowrap; height: 36px; min-height: 0; padding-top: 0; padding-bottom: 0; }
+  .w144-tstrip-why { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+}
+/* On a phone Twenty opens its command menu over the whole screen and leaves
+   its own close button where the page header is; the W144 top bar and strip
+   move that header down, so the button sat over the menu's list. The menu
+   now starts at the work area (--w144-work-top, useW144WorkTop.ts) with the
+   button on its top bar, and takes the screen to the bottom: Twenty kept 64
+   there for its bottom bar, which the W144 panel replaces. */
+@media (max-width: 768px) {
+  [data-testid='command-menu'] {
+    top: var(--w144-work-top, 0px) !important;
+    height: auto !important;
+  }
+  [data-testid='command-menu'] > div:first-child { max-height: 100% !important; }
 }
 
 /* a window left on a company the person no longer works in (W144CompanyGuard),
