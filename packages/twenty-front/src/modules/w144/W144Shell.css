@@ -585,6 +585,40 @@ html.light .w144-work::before {
   .section-title-container > div > div { opacity: 1; }
 }
 
+/* The strip under 900 is 52 tall for one line as on a computer: its padding
+   was added to its 52 (73 on a phone, a fifth of a phone on its side). */
+@media (max-width: 899px) {
+  .w144-tstrip { box-sizing: border-box; }
+}
+/* The drawer on a phone scrolls as one, the CRM group keeps the height of
+   its list. The group shrank instead: on an iPhone SE the CRM's own list
+   (Companies, People, Opportunities) had 0 of its 518, on a phone on its
+   side Notifications and the profile ran off the bottom. */
+@media (max-width: 899px) {
+  .w144-navwrap .w144-panel { overflow-y: auto; }
+  .w144-navwrap .w144-group { flex: none; }
+}
+/* A phone on its side is 343 tall: the top bar, the strip and Twenty's page
+   header and view bar left a board 110 of it. The strip keeps one line of
+   36 there, its reason cut with an ellipsis rather than wrapped. */
+@media (max-height: 500px) {
+  .w144-tstrip { flex-wrap: nowrap; height: 36px; min-height: 0; padding-top: 0; padding-bottom: 0; }
+  .w144-tstrip-why { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+}
+/* On a phone Twenty opens its command menu over the whole screen and leaves
+   its own close button where the page header is; the W144 top bar and strip
+   move that header down, so the button sat over the menu's list. The menu
+   now starts at the work area (--w144-work-top, useW144WorkTop.ts) with the
+   button on its top bar, and takes the screen to the bottom: Twenty kept 64
+   there for its bottom bar, which the W144 panel replaces. */
+@media (max-width: 768px) {
+  [data-testid='command-menu'] {
+    top: var(--w144-work-top, 0px) !important;
+    height: auto !important;
+  }
+  [data-testid='command-menu'] > div:first-child { max-height: 100% !important; }
+}
+
 /* a window left on a company the person no longer works in (W144CompanyGuard),
    the same band as the engine's and the other hubs' */
 .w144-moved {

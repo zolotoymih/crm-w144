@@ -2,6 +2,7 @@ import { W144_APP_URL } from '@/w144/w144Products';
 import { W144Mark } from '@/w144/W144Mark';
 import { W144CompanyGuard } from '@/w144/W144CompanyGuard';
 import { W144NavButton } from '@/w144/W144NavButton';
+import { useW144WorkTop } from '@/w144/useW144WorkTop';
 
 // The W144 top bar, 56 high, the same on every product: the wordmark leads
 // to the dashboard of the engine, the search pill on the right sends one query
@@ -9,6 +10,7 @@ import { W144NavButton } from '@/w144/W144NavButton';
 // CRM that key opens the CRM's own search. Under 900px the menu button
 // leads the bar and opens the panel as a drawer (W144NavButton).
 export const W144TopBar = () => {
+  useW144WorkTop();
   return (
     <header className="w144-topbar">
       <W144NavButton />
