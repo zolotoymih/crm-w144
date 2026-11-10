@@ -569,6 +569,9 @@ html.light .w144-work::before {
   .w144-search-input { align-self: stretch; }
   /* the command menu's search on a phone: 36 of its 52 bar, not 24 */
   [data-testid='command-menu'] input { min-height: 36px; }
+  /* Twenty's side menu items (Companies, People, the settings list) in the
+     CRM group: 32 tall, not 28 */
+  .navigation-drawer-item { min-height: 32px; }
 }
 
 /* What Twenty shows only under a mouse stays shown on a touch screen, as
