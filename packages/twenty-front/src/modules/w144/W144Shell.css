@@ -386,6 +386,26 @@ html.dark .w144-layout {
   display: block;
   flex: none;
 }
+/* not in the plan (11-billing, «Раздел внутри продукта»; 01-platform, shell
+   item 9): the row stays, its words dimmed to 40 percent, and the gold
+   diamond of 8 sits at the right in full colour. The diamond is the plan's
+   mark, the lock stays for the role (as the engine's .e-diamond); in the
+   light theme it takes the light gold of the tensions count */
+.w144-diamond {
+  display: block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: 0 2px;
+  background: #ffd98a;
+  transform: rotate(45deg);
+}
+html.light .w144-diamond {
+  background: #b8862e;
+}
+.w144-row.is-plan > span:first-child {
+  opacity: 0.4;
+}
 
 /* light theme: the same shell in the light tokens (text #1A1A1A, black rims,
    the one light gold #F2AD0A along the work area's edge) */
