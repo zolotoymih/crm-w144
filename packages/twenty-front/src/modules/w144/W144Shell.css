@@ -571,6 +571,20 @@ html.light .w144-work::before {
   [data-testid='command-menu'] input { min-height: 36px; }
 }
 
+/* What Twenty shows only under a mouse stays shown on a touch screen, as
+   Twenty itself does on a phone for some of them: a relation's add and
+   options on a record's page, a card's checkbox and its expand mark on a
+   board, a menu item's edit and options, a side menu section's add and
+   chevron. */
+@media (hover: none) {
+  .displayOnHover { opacity: 1 !important; pointer-events: auto !important; }
+  .checkbox-container,
+  .compact-icon-container,
+  .hoverable-buttons { opacity: 1 !important; }
+  .section-title-container > div,
+  .section-title-container > div > div { opacity: 1; }
+}
+
 /* a window left on a company the person no longer works in (W144CompanyGuard),
    the same band as the engine's and the other hubs' */
 .w144-moved {
