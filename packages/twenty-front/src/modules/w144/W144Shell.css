@@ -486,7 +486,9 @@ html.light .w144-work::before {
 /* ── The shell on a phone and an iPad (owner 2026-10-21) ──
    As in the other hubs' shell.css. Under 900 the panel leaves the row: it
    waits off the left edge and the menu button (W144NavButton) slides it in
-   over the work area on a dark glass, a scrim behind it. The work area takes
+   over the work area, a scrim behind it; the panel is a clear glass, the page
+   showing through it strongly blurred under a tint of the floor's navy, so it
+   reads as one piece with the top bar (owner 2026-11-10). The work area takes
    the full width, without its gold corner rim. Twenty's mobile bottom bar is
    gone (DefaultLayout), the panel is the one navigation on every size. */
 .w144-navbtn,
@@ -506,7 +508,7 @@ html.light .w144-work::before {
   .w144-search { width: auto; flex: 1 1 auto; max-width: 290px; min-width: 0; margin-left: 10px; }
   /* the drawer: Twenty's drawer box inside takes its width, at the padding
      it has on a computer (Twenty pads it 20 a side on a phone) */
-  .w144-layout .w144-navwrap { position: fixed; top: 56px; bottom: 0; left: 0; z-index: 30; width: min(300px, 86vw); background: linear-gradient(180deg, rgb(14, 20, 34), rgb(7, 11, 20)); box-shadow: inset -1px 0 0 hsla(0, 0%, 100%, 0.08), 24px 0 60px -20px rgba(0, 0, 0, 0.7); transform: translateX(-104%); visibility: hidden; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.32s; }
+  .w144-layout .w144-navwrap { position: fixed; top: 56px; bottom: 0; left: 0; z-index: 30; width: min(300px, 86vw); background: rgba(4, 11, 34, 0.18); -webkit-backdrop-filter: blur(40px) saturate(1.4); backdrop-filter: blur(40px) saturate(1.4); box-shadow: inset -1px 0 0 hsla(0, 0%, 100%, 0.08), 24px 0 60px -20px rgba(0, 0, 0, 0.7); transform: translateX(-104%); visibility: hidden; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.32s; }
   .w144-layout.is-nav-open .w144-navwrap { transform: none; visibility: visible; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1); }
   .w144-navwrap > div { width: 100%; }
   .w144-navwrap > div > div { width: 100%; padding: 12px 0 16px 8px; }
@@ -528,6 +530,18 @@ html.light .w144-work::before {
   .w144-layout .w144-navwrap,
   .w144-navscrim,
   .w144-navbtn i { transition: none; }
+}
+/* A finger leaves :hover on the row it touched, and Safari keeps it until the
+   next tap; the panel stays mounted from page to page, so a row the finger
+   passed kept its hover look beside the current one. With a finger the rows
+   show only their resting and current look (Twenty's items mark the current
+   one with aria-selected). */
+@media (hover: none) {
+  .w144-row:hover { color: rgba(240, 237, 230, 0.65); background: none; }
+  .w144-row.is-framed:hover { color: rgba(240, 237, 230, 0.92); background: rgba(255, 255, 255, 0.01); }
+  .navigation-drawer-item:not([aria-selected='true']):hover { background: transparent; }
+  html.light .w144-row:hover { color: rgba(26, 26, 26, 0.65); background: none; }
+  html.light .w144-row.is-framed:hover { color: rgba(26, 26, 26, 0.9); background: rgba(255, 255, 255, 0.12); }
 }
 
 /* Phone and iPad, second pass (owner 2026-11-10: buttons of different sizes,
