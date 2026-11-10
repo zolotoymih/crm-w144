@@ -543,6 +543,22 @@ html.light .w144-work::before {
   html.light .w144-row:hover { color: rgba(26, 26, 26, 0.65); background: none; }
   html.light .w144-row.is-framed:hover { color: rgba(26, 26, 26, 0.9); background: rgba(255, 255, 255, 0.12); }
 }
+/* The search on a phone (owner 2026-11-10): one round icon, as the engine has
+   it. A tap opens the field across the bar, the wordmark steps aside and the
+   keyboard comes up; Enter searches every product, a tap elsewhere folds it
+   back. While folded the field lies over the icon, so the tap lands on the
+   field itself and Safari brings the keyboard up without a script. */
+@media (max-width: 639px) {
+  .w144-topbar { position: relative; }
+  .w144-wordmark { transition: opacity 0.2s ease; }
+  .w144-topbar .w144-search { position: relative; box-sizing: border-box; flex: none; width: 40px; max-width: none; height: 40px; min-height: 40px; margin-left: 0; padding: 0; justify-content: center; transition: width 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .w144-search .w144-search-icon { font-size: 16px; }
+  .w144-search .w144-search-input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+  .w144-topbar .w144-search:focus-within { position: absolute; top: 8px; right: 16px; width: calc(100% - 72px); padding: 0 16px; justify-content: flex-start; }
+  .w144-search:focus-within .w144-search-input { position: static; opacity: 1; cursor: text; }
+  .w144-topbar:has(.w144-search:focus-within) .w144-wordmark { opacity: 0; pointer-events: none; }
+}
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) { .w144-wordmark, .w144-topbar .w144-search { transition: none; } }
 
 /* Phone and iPad, second pass (owner 2026-11-10: buttons of different sizes,
    text so dense it runs together). The tensions strip's way in keeps one
